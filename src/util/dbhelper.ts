@@ -1,6 +1,6 @@
 import NetworkUser from "../models/NetworkUser";
 import ConnectionLog from "../models/ConnectionLog";
-const fs = require("fs");
+import fs from "fs";
 
 export default class DBUtils {
 
@@ -36,7 +36,7 @@ export default class DBUtils {
 
     public async updateIPFile() {
         try {
-            const query = NetworkUser.find({}).distinct("IP");
+            const query = NetworkUser.find({}).distinct("ip");
             query.exec(function (err, values) {
                 fs.writeFile("ips.txt", values, function (error: any) {
                     if (error) {
@@ -44,7 +44,6 @@ export default class DBUtils {
                     }
                     console.log("The file was saved!");
                 });
-
             });
             console.log("IP file updated!");
         } catch (e) {

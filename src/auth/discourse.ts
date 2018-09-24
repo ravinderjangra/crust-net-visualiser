@@ -37,7 +37,7 @@ router.get("/login", function (req, res, next) {
         username: "username",
         trustLevel: "trust_level",
         strategy: "discourse",
-        ip: req.headers["x-forwarded-for"] || req.connection.remoteAddress,
+        ip: req.headers["x-forwarded-for"] || req.connection.remoteAddress
     };
     new DBUtils().saveNetworkUser(JSON.stringify(user));
     res.redirect("/success");
