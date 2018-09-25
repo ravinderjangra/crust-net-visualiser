@@ -2,6 +2,8 @@ import NetworkUser from "../models/NetworkUser";
 import ConnectionLog from "../models/ConnectionLog";
 import fs from "fs";
 
+const config = require("../config/app.json");
+
 export default class DBUtils {
 
     public async saveNetworkUser(networkuser: string) {
@@ -18,15 +20,15 @@ export default class DBUtils {
                     strategy: JsonObj.strategy,
                 }
             };
-            NetworkUser.findOneAndUpdate(query, newvalues, options, function (err, doc) {
+            NetworkUser.findOneAndUpdate(query, newvalues, options, (err, doc) => {
                 if (err) {
                     console.log(err);
                 } else {
+                    this.updateIPFile();
                     console.log("updated");
                 }
             }
             );
-            this.updateIPFile();
             console.log("Done!");
         } catch (e) {
             console.log(e);
@@ -38,7 +40,9 @@ export default class DBUtils {
         try {
             const query = NetworkUser.find({}).distinct("ip");
             query.exec(function (err, values) {
-                fs.writeFile("ips.txt", values, function (error: any) {
+                const template = require(config.whitelistIpFile.templatePath);
+                template.whitelistIps = values;
+                fs.writeFile(config.whitelistIpFile.path + config.whitelistIpFile.filename, JSON.stringify(template), function (error: any) {
                     if (error) {
                         return console.log(error);
                     }
@@ -60,4 +64,17 @@ export default class DBUtils {
         }
     }
 
+    public async getConnectionLogs() {
+        try {
+            await ConnectionLog.find({}, function (err, logs) {
+                if (err) {
+                    return "error";
+                } else {
+                    return logs;
+                }
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    }
 }

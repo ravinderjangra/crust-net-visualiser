@@ -3,8 +3,6 @@ import express, { json } from "express";
 import axios from "axios";
 import generateNonce from "a-nonce-generator";
 import queryString from "query-string";
-import DBUtils from "../util/dbhelper";
-import Helpers from "../util/Helpers";
 
 const config = require("../config/app.json");
 const cred = require("../config/cred.json");
@@ -20,7 +18,7 @@ const sign = (data: any, secret: any) => {
     return hmac.digest("hex");
 };
 
-const returnUrl = config.authReturnUrl[(process.env.NODE_ENV || "prod").trim()];
+const returnUrl = "http://localhost:3000/auth/discourse/callback"; // config.authReturnUrl[(process.env.NODE_ENV || "prod").trim()];
 
 const router = express.Router();
 
@@ -30,19 +28,7 @@ router.get("/login", function (req, res, next) {
     const base64Payload = new Buffer(payload).toString("base64");
     const urlEncodedPayload = encodeURIComponent(base64Payload);
     const signature = sign(base64Payload, cred.discourseSecret);
-    const generator = new Helpers();
-    const user = {
-        userid: generator.randomNumber(),
-        email: "email",
-        username: "username",
-        trustLevel: "trust_level",
-        strategy: "discourse",
-        ip: req.headers["x-forwarded-for"] || req.connection.remoteAddress
-    };
-    new DBUtils().saveNetworkUser(JSON.stringify(user));
-    res.redirect("/success");
-
-    // res.redirect(`${config.discourseUrl}/session/sso_provider?sso=${urlEncodedPayload}&sig=${signature}`);
+    res.redirect(`${config.discourseUrl}/session/sso_provider?sso=${urlEncodedPayload}&sig=${signature}`);
 });
 // [END authorize]
 
@@ -55,7 +41,7 @@ router.get("/callback", async (req, res) => {
         }
         const data = queryString.parse(new Buffer(sso, "base64").toString());
         const userDetails = await axios.get(`${config.discourseUrl}/users/${data.username}.json`);
-        req.session.passport = {
+        req.session.userdata = {
             user: {
                 id: data.external_id,
                 email: data.email,

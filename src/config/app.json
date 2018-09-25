@@ -11,7 +11,7 @@
         "TEST-18"
     ],
     "authReturnUrl": {
-        "dev": "http://localhost:8000/auth/discourse/callback",
+        "dev": "http://localhost:3000/auth/discourse/callback",
         "prod": "https://invite.maidsafe.net/auth/discourse/callback"
     },
     "scp": {
@@ -19,5 +19,10 @@
         "username": "qa",
         "path": "safe_vault.crust.config",
         "readyTimeout": 99999
+    },
+    "whitelistIpFile": {
+        "path": "D:\\crust-net-visualiser\\",
+        "filename": "config.json",
+        "templatePath": "../config/template.json"
     }
 }

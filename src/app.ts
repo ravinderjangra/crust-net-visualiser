@@ -1,8 +1,7 @@
-import express, { json } from "express";
+import express from "express";
 import compression from "compression";  // compresses requests
 import session from "express-session";
 import bodyParser from "body-parser";
-import logger from "./util/logger";
 import lusca from "lusca";
 import dotenv from "dotenv";
 import mongo from "connect-mongo";
@@ -22,13 +21,13 @@ dotenv.config({ path: ".env.example" });
 
 // Controllers (route handlers)
 import * as homeController from "./controllers/home";
-import * as userController from "./controllers/user";
 
 
 // API keys and Passport configuration
 import * as passportConfig from "./config/passport";
 import NetworkUser from "./models/NetworkUser";
 import DBUtils from "./util/dbhelper";
+import ConnectionLog from "./models/ConnectionLog";
 
 // Create Express server
 const app = express();
@@ -45,11 +44,16 @@ mongoose.connect(mongoUrl, { useMongoClient: true }).then(
 
 // Express configuration
 app.set("port", process.env.PORT || 3000);
-app.set("views", path.join(__dirname, "../views"));
-app.set("view engine", "pug");
+
+// app.set("views", path.join(__dirname, "../views"));
+// app.engine("html", require("ejs").renderFile);
+// app.set("view engine", "html");
+
 app.use(compression());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(expressValidator());
 app.use(session({
   resave: true,
@@ -91,46 +95,52 @@ app.use(
 /**
  * Primary app routes.
  */
-app.get("/", homeController.index);
-app.get("/login", userController.getLogin);
-app.post("/login", userController.postLogin);
-app.get("/logout", userController.logout);
-app.get("/forgot", userController.getForgot);
-app.post("/forgot", userController.postForgot);
-app.get("/reset/:token", userController.getReset);
-app.post("/reset/:token", userController.postReset);
-app.get("/signup", userController.getSignup);
-app.post("/signup", userController.postSignup);
-app.get("/account", passportConfig.isAuthenticated, userController.getAccount);
-app.post("/account/profile", passportConfig.isAuthenticated, userController.postUpdateProfile);
-app.post("/account/password", passportConfig.isAuthenticated, userController.postUpdatePassword);
-app.post("/account/delete", passportConfig.isAuthenticated, userController.postDeleteAccount);
-app.get("/account/unlink/:provider", passportConfig.isAuthenticated, userController.getOauthUnlink);
+app.get("/", function (req, res) {
+  res.redirect("index.html");
+});
+
 
 app.get("/ips", function (req: any, res: any, next: any) {
-  const query = NetworkUser.find({}).distinct("IP");
+  const query = NetworkUser.find({}).distinct("ip");
   query.exec(function (err, value) {
     if (err) return next(err);
     res.send(value);
   });
 });
 
-app.use("/auth", discourseRouter);
+app.use("/auth/discourse", discourseRouter);
+
 app.get("/success", homeController.success);
 
+app.get("/getstats", function (req: any, res: any, next: any) {
+  const query = ConnectionLog.find({});
+  query.exec(function (err, value) {
+    if (err) return next(err);
+    res.send(value);
+  });
+});
+
 const dbUtility = new DBUtils();
+
 // initialize a simple http server
 const server = require("http").createServer(this.app);
 
 // initialize the WebSocket server instance
 const wss = new WebSocket.Server({ server });
 
-wss.on("connection", (ws: WebSocket, req: any) => {
+wss.on("connection", (ws: WebSocket) => {
+  // send immediatly a feedback to the incoming connection
+  ws.send("user connected");
+
+  ws.on("error", function (e) {
+    console.log(e);
+  });
+
   // connection is up, let's add a simple simple event
   ws.on("message", (message: string) => {
     console.log(`Received -> ${message}`);
 
-    if (message.includes("connectionid")) {
+    if (message.includes("ConnectionId")) {
       dbUtility.saveConnectionLog(message);
 
       wss.clients.forEach(function each(client) {
@@ -139,34 +149,17 @@ wss.on("connection", (ws: WebSocket, req: any) => {
         }
       });
     }
+
   });
+});
+
+wss.on("error", function (e) {
+  console.log(e);
 });
 
 // start our server
 server.listen(process.env.PORT || 44444, () => {
   console.log(`Server started on port 44444 :)`);
 });
-
-// // initialize a simple http server
-// const server = require("http").createServer(this.app);
-
-// // initialize the WebSocket server instance
-// const wss = new WebSocket.Server({ server });
-
-// wss.on("connection", (ws: WebSocket) => {
-//   // send immediatly a feedback to the incoming connection
-//   ws.send("user connected");
-
-//   // connection is up, let's add a simple simple event
-//   ws.on("message", (message: string) => {
-//     console.log(`Received -> ${message}`);
-//     new DBUtils().saveConnectionLog(message);
-//   });
-// });
-
-// // start our server
-// server.listen(process.env.PORT || 44444, () => {
-//   console.log(`Server started on port 44444 :)`);
-// });
 
 export default app;
