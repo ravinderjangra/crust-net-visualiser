@@ -1,25 +1,32 @@
-import mongoose from "mongoose";
+import { Document, Schema, Model, model} from "mongoose";
+import { ConnectionLog } from "./../types/Apptypes";
 
-const ConnectionLogSchema = new mongoose.Schema({
-    NatTraversal: {
-        Result: Boolean,
-        Time_Spent: Number
-    },
-    Peer: {
-        IP: String,
-        NAT_Type: String,
-        OS: String
-    },
-    NatType: {
-        EIM: Boolean,
-        EDM: Boolean
-    },
-    ConnectionId: {
-        type: String,
-        unique: true
-    }
+export interface IConnectionLog extends ConnectionLog, Document {
+    insert() : Promise<void>;
+}
+
+export const ConnectionLogSchema: Schema = new Schema({
+    peer_requester: Object,
+    peer_responder: Object,
+    is_direct_successful: Boolean,
+    utp_hole_punch_result: Object,
+    tcp_hole_punch_result: Object,
+    createdAt: Date
 });
 
-const ConnectionLog = mongoose.model("ConnectionLog", ConnectionLogSchema);
+ConnectionLogSchema.pre("save", function(next: Function) {
+    const now = new Date();
+    if (!this.createdAt) {
+      this.createdAt = now;
+    }
+    next();
+});
 
-export default ConnectionLog;
+ConnectionLogSchema.methods.insert = () => {
+    return new Promise((resolve, reject) => {
+        this.save((err: Error) => err ? reject(err) : resolve());
+    });
+};
+
+const ConnectionLogModel: Model<IConnectionLog> = model<IConnectionLog>("ConnectionLog", ConnectionLogSchema);
+export default ConnectionLogModel;

@@ -37,22 +37,20 @@ router.get("/callback", async (req, res) => {
     try {
         const sso = req.query.sso;
         if (sign(sso, cred.discourseSecret) !== req.query.sig) {
-            return res.redirect("/auth_response.html?err=Authorisation failed");
+            return res.redirect("/error.html?err=Authorisation failed");
         }
         const data = queryString.parse(new Buffer(sso, "base64").toString());
         const userDetails = await axios.get(`${config.discourseUrl}/users/${data.username}.json`);
-        req.session.userdata = {
-            user: {
-                id: data.external_id,
-                email: data.email,
-                userName: data.username.toLowerCase(),
-                trustLevel: userDetails.data.user.trust_level,
-                strategy: "discourse"
-            }
+        req.session.user = {
+            id: data.external_id,
+            email: data.email,
+            userName: data.username.toLowerCase(),
+            trustLevel: userDetails.data.user.trust_level,
+            strategy: "discourse"
         };
         res.redirect(config.authConfirmURL);
     } catch (e) {
-        return res.redirect("/auth_response.html?err=Authorisation failed." + (e || ""));
+        return res.redirect("/error.html?err=Authorisation failed." + (e || ""));
     }
 });
 // [END callback]

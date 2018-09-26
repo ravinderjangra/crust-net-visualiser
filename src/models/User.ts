@@ -1,93 +1,42 @@
-import bcrypt from "bcrypt-nodejs";
-import crypto from "crypto";
-import mongoose from "mongoose";
+import { Document, Schema, Model, model} from "mongoose";
+import { User } from "./../types/AppTypes";
 
-export type UserModel = mongoose.Document & {
-  email: string,
-  password: string,
-  passwordResetToken: string,
-  passwordResetExpires: Date,
+interface IUser extends User, Document {
+    upsert() : Promise<void>;
+    getDistinctIpList() : Promise<Array<string>>;
+}
 
-  facebook: string,
-  tokens: AuthToken[],
-
-  profile: {
-    name: string,
-    gender: string,
-    location: string,
-    website: string,
-    picture: string
-  },
-
-  comparePassword: comparePasswordFunction,
-  gravatar: (size: number) => string
-};
-
-type comparePasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
-
-export type AuthToken = {
-  accessToken: string,
-  kind: string
-};
-
-const userSchema = new mongoose.Schema({
-  email: { type: String, unique: true },
-  password: String,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-
-  facebook: String,
-  twitter: String,
-  google: String,
-  tokens: Array,
-
-  profile: {
-    name: String,
-    gender: String,
-    location: String,
-    website: String,
-    picture: String
-  }
-}, { timestamps: true });
-
-/**
- * Password hash middleware.
- */
-userSchema.pre("save", function save(next) {
-  const user = this;
-  if (!user.isModified("password")) { return next(); }
-  bcrypt.genSalt(10, (err, salt) => {
-    if (err) { return next(err); }
-    bcrypt.hash(user.password, salt, undefined, (err: mongoose.Error, hash) => {
-      if (err) { return next(err); }
-      user.password = hash;
-      next();
-    });
-  });
+const UserSchema: Schema = new Schema({
+    peer_requester: Object,
+    peer_responder: Object,
+    is_direct_successful: Boolean,
+    utp_hole_punch_result: Object,
+    tcp_hole_punch_result: Object,
+    createdAt: Date
 });
 
-const comparePassword: comparePasswordFunction = function (candidatePassword, cb) {
-  bcrypt.compare(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
-    cb(err, isMatch);
-  });
+UserSchema.pre("save", function(next: Function) {
+    const now = new Date();
+    if (!this.createdAt) {
+      this.createdAt = now;
+    }
+    next();
+});
+
+UserSchema.methods.upsert = () => {
+    return new Promise((resolve, reject) => {
+        const opts = { upsert: true, new: true, setDefaultsOnInsert: true };
+        this.findOneAndUpdate({userId: this.userId}, this, opts, (err: Error) => {
+            err ? reject(err) : resolve();
+        });
+    });
 };
 
-userSchema.methods.comparePassword = comparePassword;
-
-/**
- * Helper method for getting user's gravatar.
- */
-userSchema.methods.gravatar = function (size: number) {
-  if (!size) {
-    size = 200;
-  }
-  if (!this.email) {
-    return `https://gravatar.com/avatar/?s=${size}&d=retro`;
-  }
-  const md5 = crypto.createHash("md5").update(this.email).digest("hex");
-  return `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
+UserSchema.methods.getDistinctIpList = () => {
+    return new Promise((resolve, reject) => {
+        const query = this.find({}).distinct("ip");
+        query.exec(((err: Error, list: Array<string>) => err ? reject(err) : resolve(list)));
+    });
 };
-
-// export const User: UserType = mongoose.model<UserType>('User', userSchema);
-const User = mongoose.model("User", userSchema);
-export default User;
+const UserModel: Model<IUser> = model<IUser>("user", UserSchema);
+export default UserModel;
