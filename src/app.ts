@@ -17,6 +17,7 @@ import * as homeController from "./controllers/home";
 import { getCiphers } from "crypto";
 import UserModel from "./models/User";
 import { getClientIp } from "./util/helpers";
+import userService from "./models/User";
 
 const MongoStore = mongo(session);
 
@@ -28,6 +29,7 @@ dotenv.config({ path: ".env.example" });
 // Create Express server
 const app = express();
 
+console.log(MONGODB_URI);
 // Connect to MongoDB
 (<any>mongoose).Promise = bluebird;
 mongoose.connect(MONGODB_URI, { useMongoClient: true }).then(
@@ -57,14 +59,32 @@ app.use(session({
 // app.use(passport.session());
 app.use(lusca.xframe("SAMEORIGIN"));
 app.use(lusca.xssProtection(true));
-app.use((req, res, next) => {
-  res.locals.user = req.user;
-  next();
-});
+// app.use((req, res, next) => {
+//   res.locals.user = req.user;
+//   next();
+// });
 
 app.use(
   express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
 );
+
+app.get("/test", async (req, res) => {
+  try {
+    await userService.upsert({
+      userId: 11,
+      userName: "krishna",
+      ip: "",
+      trustLevel: 1,
+      email: "email",
+      stratergy: "discourse"
+    });
+    const list = await userService.list();
+    res.send(list);
+  } catch (e) {
+    console.log("Error", e);
+    res.send(e);
+  }
+});
 
 /**
  * Primary app routes.
@@ -89,7 +109,7 @@ app.get("/api/updateIp", (req, res) => {
   const ip = getClientIp(req);
   const user = req.session.user;
   user.ip = ip;
-  new UserModel(user).upsert().then(() => {
+  userService.upsert(user).then(() => {
     res.sendStatus(200);
   }, (e) => {
     res.status(400);
