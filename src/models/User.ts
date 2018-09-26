@@ -1,24 +1,25 @@
-import { Document, Schema, Model, model} from "mongoose";
+import { Document, Schema, Model, model } from "mongoose";
 import { User } from "./../types/AppTypes";
 
 interface IUser extends User, Document {
-    upsert() : Promise<void>;
-    getDistinctIpList() : Promise<Array<string>>;
+    upsert(): Promise<void>;
+    getDistinctIpList(): Promise<Array<string>>;
 }
 
-const UserSchema: Schema = new Schema({
-    peer_requester: Object,
-    peer_responder: Object,
-    is_direct_successful: Boolean,
-    utp_hole_punch_result: Object,
-    tcp_hole_punch_result: Object,
+const UserSchema = new Schema({
+    userId: String,
+    email: String,
+    userName: String,
+    trustLevel: String,
+    strategy: String,
+    ip: String,
     createdAt: Date
 });
 
-UserSchema.pre("save", function(next: Function) {
+UserSchema.pre("save", function (next: Function) {
     const now = new Date();
     if (!this.createdAt) {
-      this.createdAt = now;
+        this.createdAt = now;
     }
     next();
 });
@@ -26,7 +27,7 @@ UserSchema.pre("save", function(next: Function) {
 UserSchema.methods.upsert = () => {
     return new Promise((resolve, reject) => {
         const opts = { upsert: true, new: true, setDefaultsOnInsert: true };
-        this.findOneAndUpdate({userId: this.userId}, this, opts, (err: Error) => {
+        UserModel.findOneAndUpdate({ userId: this.userId }, this, opts, (err: Error) => {
             err ? reject(err) : resolve();
         });
     });
@@ -38,5 +39,6 @@ UserSchema.methods.getDistinctIpList = () => {
         query.exec(((err: Error, list: Array<string>) => err ? reject(err) : resolve(list)));
     });
 };
+
 const UserModel: Model<IUser> = model<IUser>("user", UserSchema);
 export default UserModel;

@@ -8,13 +8,7 @@ var manageInviteClass = 'manage-invite';
 var inviteURLClass = 'invite-url';
 var adminClass = 'admin';
 var superAdminClass = 'super-admin';
-var TESTNET_SELECTION =  'TESTNET_SELECTION';
-
-var ROLES = {
-  SUPER_ADMIN: 'superadmin',
-  ADMIN: 'admin',
-  USER: 'user'
-};
+var TESTNET_SELECTION = 'TESTNET_SELECTION';
 
 var ERROR_CODES = {
   UNAUTHORISED: 401,
@@ -27,14 +21,6 @@ function setLoading(state) {
     return;
   }
   loadingEle.removeClass('show');
-}
-
-function storeTestnetSelection(val) {
-  window.localStorage.setItem(TESTNET_SELECTION, val);
-}
-
-function fetchTestnetSelection() {
-  return window.localStorage.getItem(TESTNET_SELECTION) || 'Testnet-1';
 }
 
 function handleError(err) {
@@ -57,14 +43,6 @@ function deleteReq(url) {
   return axios.delete(BASE_URL + url).catch(handleError);
 }
 
-function setTestnetTitle() {
-  var title = fetchTestnetSelection();
-  if (!title) {
-    return;
-  }
-  $('#testnetTitle').html(title.replace('-', ' ').toUpperCase());
-}
-
 function goTo(page, toNewPage) {
   var path = location.pathname.split('/').slice(0, -1).join('/');
   if (toNewPage) {
@@ -83,38 +61,38 @@ function displayCntr(className, state) {
 }
 
 function getTestnetFromQuery() {
-    if (location.search) {
-        var param;
-        var tokens = location.search.replace('?', '').split('&');
-        for (let i = 0; i < tokens.length; i++) {
-            param = tokens[i].split('=');
-            if (param[0] === 'testnet') {
-                return param[1];
-            }
-        }
+  if (location.search) {
+    var param;
+    var tokens = location.search.replace('?', '').split('&');
+    for (let i = 0; i < tokens.length; i++) {
+      param = tokens[i].split('=');
+      if (param[0] === 'testnet') {
+        return param[1];
+      }
     }
-    return '';
+  }
+  return '';
 }
 
 function getInviteData(token) {
-    let url = '/invite/' + token;
-    let testnet = getTestnetFromQuery();
-    // if (!testnet) {
-    //     alert('Testnet parameter is not found. The URL is invalid.');
-    //     return;
-    // }
-    url += ('/' + testnet);
-  return get(url);
-}
-
-function resetIP(token) {
-  let url = '/invite/resetIp/' + token;
+  let url = '/invite/' + token;
   let testnet = getTestnetFromQuery();
   // if (!testnet) {
   //     alert('Testnet parameter is not found. The URL is invalid.');
   //     return;
   // }
-  url += ( '/' + testnet);
+  url += ('/' + testnet);
+  return get(url);
+}
+
+function resetIP(token) {
+  let url = '/invite/updateip/';
+  // let testnet = getTestnetFromQuery();
+  // if (!testnet) {
+  //     alert('Testnet parameter is not found. The URL is invalid.');
+  //     return;
+  // }
+  url += ('/' + testnet);
   return post(url, {
     withCredentials: true
   });
@@ -128,33 +106,80 @@ function onClickOpenStats() {
   goTo('/stats.html', true);
 }
 
-function onClickUpdateIP() {
-  var token = $('#copyToken').val();
+// function onClickUpdateIP() {
+//   // var token = $('#copyToken').val();
+//   setLoading(true);
+//   resetIP()
+//     .then(function (res) {
+//       alert('Your IP is updated to ' + res.data.ip);
+//       setLoading(false);
+//       setInvite(res.data.invite, res.data.ip);
+//       return res.data.ip;
+//     })
+//     .then(function (ip) {
+//       setLoading(true);
+//       return getProfile()
+//         .then(function (res) {
+//           setLoading(false);
+//           setCurrentIp(ip, res.data.cip);
+//         }).catch(function (err) {
+//           setLoading(false);
+//           setCurrentIp(ip, err.cip || err.data.cip);
+//         });
+//     }).catch(function (err) {
+//       setLoading(false);
+//       alert('Error : ', err.message);
+//     })
+// }
+
+
+function setTestnetTitle() {
+  var title = "ALPHA-3"
+  if (!title) {
+    return;
+  }
+  $('#testnetTitle').html(title.replace('-', ' ').toUpperCase());
+}
+
+function setUpdateIpPage() {
+  setTestnetTitle();
   setLoading(true);
-  resetIP()
+  setIpDetails();
+};
+
+function setIpDetails() {
+  getUserData()
     .then(function (res) {
-      alert('Your IP is updated to ' + res.data.ip);
       setLoading(false);
-      setInvite(res.data.invite, res.data.ip);
-      return res.data.ip;
-    })
-    .then(function (ip) {
-      setLoading(true);
-      return getProfile()
-        .then(function (res) {
-          setLoading(false);
-          setCurrentIp(ip, res.data.cip);
-        }).catch(function (err) {
-          setLoading(false);
-          setCurrentIp(ip, err.cip || err.data.cip);
-        });
+      setCurrentIp(res.data.ip, res.data.cip);
+    });
+}
+
+function getUserData() {
+  var url = "/api/profile";
+  return get(url);
+}
+
+function updateIp() {
+  let url = '/api/updateIp';
+  return get(url);
+}
+
+function onClickUpdateIP() {
+  setLoading(true);
+  updateIp()
+    .then(function (res) {
+      alert("IP Updated");
+      setLoading(false);
+      setIpDetails();
     }).catch(function (err) {
-    setLoading(false);
-    alert('Error : ', err.message);
-  })
+      setLoading(false);
+      alert('Error : ', err.message);
+    })
 }
 
 function setCurrentIp(ip, cip) {
+  $('#inviteIP').html(ip || 'not set');
   $('#currentInviteIP').html(cip || 'not set');
   var updateIpBtn = $('#updateIp');
   if (!ip) {
@@ -163,21 +188,15 @@ function setCurrentIp(ip, cip) {
   updateIpBtn.prop('disabled', (ip === cip));
 }
 
-function setUpdateIpPage() {
-  setTestnetTitle();
-  // 1. User is authorsing for the first time
-  // 2. User updating IP
+var parsedURL = new URL(location.href);
+var toRedirect = JSON.parse(parsedURL.searchParams.get('auto_redirect'));
+
+var displayInvitePage = function (invite, ip) {
+  setLoading(false);
+  displayCntr(inviteCntrClass, true);
+  displayCntr(hasInviteClass, true);
+  setInvite(invite, ip);
 };
-
-  var parsedURL = new URL(location.href);
-  var toRedirect = JSON.parse(parsedURL.searchParams.get('auto_redirect'));
-
-  var displayInvitePage = function (invite, ip) {
-    setLoading(false);
-    displayCntr(inviteCntrClass, true);
-    displayCntr(hasInviteClass, true);
-    setInvite(invite, ip);
-  };
 
 function setAuthResponse() {
   setTestnetTitle();
@@ -228,8 +247,8 @@ function selectTestnet(ele) {
 function setTestnetList(list) {
   var ele = $('#testnetList');
   ele.html('');
-  for (var i=0; i< list.length; i++) {
-    ele.append('<li data-name="'+list[i]+'" onclick="selectTestnet(this)">'+list[i]+'</li>');
+  for (var i = 0; i < list.length; i++) {
+    ele.append('<li data-name="' + list[i] + '" onclick="selectTestnet(this)">' + list[i] + '</li>');
   }
 }
 

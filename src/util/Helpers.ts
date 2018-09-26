@@ -1,6 +1,4 @@
-export default class Helpers {
 
-    public randomNumber() {
-        return Math.floor(Math.random() * 10000);
-    }
-}
+export const getClientIp = (req: any) => {
+    return req.ip.replace("::ffff:", "");
+};

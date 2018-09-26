@@ -42,7 +42,7 @@ router.get("/callback", async (req, res) => {
         const data = queryString.parse(new Buffer(sso, "base64").toString());
         const userDetails = await axios.get(`${config.discourseUrl}/users/${data.username}.json`);
         req.session.user = {
-            id: data.external_id,
+            userId: data.external_id,
             email: data.email,
             userName: data.username.toLowerCase(),
             trustLevel: userDetails.data.user.trust_level,

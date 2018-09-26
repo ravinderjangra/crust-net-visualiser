@@ -16,6 +16,7 @@ import WebSocketServer from "./WebSocketServer";
 import * as homeController from "./controllers/home";
 import { getCiphers } from "crypto";
 import UserModel from "./models/User";
+import { getClientIp } from "./util/helpers";
 
 const MongoStore = mongo(session);
 
@@ -85,7 +86,7 @@ app.get("/api/updateIp", (req, res) => {
   if (!req.session && !req.session.user) {
     return res.sendStatus(401);
   }
-  const ip = '';//getIpFromReq(req);
+  const ip = getClientIp(req);
   const user = req.session.user;
   user.ip = ip;
   new UserModel(user).upsert().then(() => {

@@ -1,11 +1,11 @@
-import { Document, Schema, Model, model} from "mongoose";
+import { Document, Schema, Model, model } from "mongoose";
 import { ConnectionLog } from "./../types/Apptypes";
 
 export interface IConnectionLog extends ConnectionLog, Document {
-    insert() : Promise<void>;
+    insert(): Promise<void>;
 }
 
-export const ConnectionLogSchema: Schema = new Schema({
+export const ConnectionLogSchema = new Schema({
     peer_requester: Object,
     peer_responder: Object,
     is_direct_successful: Boolean,
@@ -14,10 +14,10 @@ export const ConnectionLogSchema: Schema = new Schema({
     createdAt: Date
 });
 
-ConnectionLogSchema.pre("save", function(next: Function) {
+ConnectionLogSchema.pre("save", function (next: Function) {
     const now = new Date();
     if (!this.createdAt) {
-      this.createdAt = now;
+        this.createdAt = now;
     }
     next();
 });
