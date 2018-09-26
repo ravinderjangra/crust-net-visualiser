@@ -7,7 +7,7 @@ const UserSchema: Schema = new Schema({
     userId: String,
     userName: String,
     email: String,
-    stratergy: String,
+    strategy: String,
     trustLevel: Number,
     ip: String,
     createdAt: Date
@@ -27,6 +27,7 @@ class UserService {
     public upsert(user: User): Promise<void> {
         return new Promise((resolve, reject) => {
             const opts = { upsert: true, new: true, setDefaultsOnInsert: true };
+            user.ip = user.ip || "";
             UserModel.findOneAndUpdate({ userId: user.userId }, user, opts, (err: Error) => {
                 err ? reject(err) : resolve();
             });
@@ -36,6 +37,12 @@ class UserService {
     public list(): Promise<Array<User>> {
         return new Promise((resolve, reject) => {
             UserModel.find({}, (err: Error, list: Array<User>) => err ? reject(err) : resolve(list));
+        });
+    }
+
+    public findbyId(userId: string): Promise<User> {
+        return new Promise((resolve, reject) => {
+            UserModel.findOne({ userId: userId }, (err: Error, user: User) => err ? reject(err) : resolve(user));
         });
     }
 

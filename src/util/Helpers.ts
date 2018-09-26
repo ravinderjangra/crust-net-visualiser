@@ -1,4 +1,2 @@
 
-export const getClientIp = (req: any) => {
-    return req.ip.replace("::ffff:", "");
-};
+export const getClientIp = (req: any) => req.ip.replace("::ffff:", "");

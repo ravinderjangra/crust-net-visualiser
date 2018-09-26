@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import userService from "../models/User";
-
+const config = require("../config/app.json");
 /**
  * GET /
  * Home page.
@@ -15,30 +15,32 @@ export const failure = (req: Request, res: Response) => {
   res.redirect("error.html");
 };
 
-export const success = (req: Request, res: Response) => {
-  console.log(JSON.stringify(req.session.userdata.user));
+export const success = async (req: Request, res: Response) => {
+  try {
+    const useremail = req.session.user.email;
+    if (config.isMaidsafeOnly) {
+      if (!useremail.endsWith("maidsafe.net")) {
+        return res.redirect("/error.html?err=" + "Only for MaidSafe users");
+      }
+    }
 
-  // let reqip = ((req.headers["x-forwarded-for"] || "") as string).split(",")[0].trim() || req.connection.remoteAddress;
-  // if (reqip.substr(0, 7) == "::ffff:") {
-  //   reqip = reqip.substr(7);
-  // }
-  // UserModel.findOne({userId: req.session.user.userId}, (err, doc) => {
-  //   if (err) {
-  //     return res.redirect('/error.html?err=' + err.message);
-  //   }
-  //   if (doc) {
-  //     req.session.user = doc;
-  //     return res.redirect('/update_ip.html');
-  //   }
-  //   const user = new UserModel(req.session.user);
-  //     user.upsert().then(() => {
-  //       req.session.user = user;
-  //       res.redirect('/update_ip.html');
-  //     }).catch(e => {
-  //       res.redirect('/error.html?err=' + e.message);
-  //     });
-  // });
-  // const user = new UserModel(req.session.userdata.user);
-  // console.log(JSON.stringify(user));
-  // user.upsert();
+    const user = await userService.findbyId(req.session.user.userId);
+    if (user) {
+      req.session.user = user;
+      return res.redirect("/update_ip.html");
+    }
+    else {
+      await userService.upsert(req.session.user).then(() => {
+        userService.findbyId(req.session.user.userId).then(function (user) {
+          console.log(user);
+          req.session.user = user;
+          res.redirect("/update_ip.html");
+        });
+      }).catch(e => {
+        res.redirect("/error.html?err=" + e.message);
+      });
+    }
+  } catch (e) {
+    return res.redirect("/error.html?err=" + e.message);
+  }
 };

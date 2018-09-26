@@ -76,12 +76,11 @@ app.get("/test", async (req, res) => {
       ip: "",
       trustLevel: 1,
       email: "email",
-      stratergy: "discourse"
+      strategy: "discourse"
     });
     const list = await userService.list();
     res.send(list);
   } catch (e) {
-    console.log("Error", e);
     res.send(e);
   }
 });
@@ -99,22 +98,30 @@ app.get("/api/profile", (req, res) => {
   if (!req.session && !req.session.user) {
     return res.sendStatus(401);
   }
+  const cip = getClientIp(req);
+  req.session.user.cip = cip;
   res.send(req.session.user);
 });
 
-app.get("/api/updateIp", (req, res) => {
-  if (!req.session && !req.session.user) {
-    return res.sendStatus(401);
-  }
-  const ip = getClientIp(req);
-  const user = req.session.user;
-  user.ip = ip;
-  userService.upsert(user).then(() => {
+app.get("/api/updateIp", async (req, res) => {
+  try {
+    if (!req.session && !req.session.user) {
+      return res.sendStatus(401);
+    }
+    const user = req.session.user;
+    user.ip = req.session.user.cip;
+    await userService.upsert({
+      userId: user.userId,
+      userName: user.userName,
+      ip: user.cip,
+      trustLevel: user.trustLevel,
+      email: user.email,
+      strategy: user.strategy
+    });
     res.sendStatus(200);
-  }, (e) => {
-    res.status(400);
-    res.send(e.message);
-  });
+  } catch (e) {
+    res.send(e);
+  }
 });
 
 

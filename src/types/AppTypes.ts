@@ -31,7 +31,7 @@ interface User {
     userName: string;
     email: string;
     trustLevel: number;
-    stratergy: string;
+    strategy: string;
     ip: string;
 }
 

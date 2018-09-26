@@ -1,5 +1,5 @@
 import * as WebSocket from "ws";
-// import ConnectionLogService from './models/ConnectionLog';
+import connectionLogService from "./models/ConnectionLog";
 
 export default class WebSocketServer {
   private wss: WebSocket.Server;
@@ -18,11 +18,12 @@ export default class WebSocketServer {
       });
 
       // connection is up, let's add a simple simple event
-      ws.on("message", (message: string) => {
-        console.log(`Received -> ${message}`);
+      ws.on("message", async (message: string) => {
+        // console.log(`Received -> ${message}`);
 
-        if (message.includes("ConnectionId")) {
-          this.wss.clients.forEach(function each(client) {
+        if (message.includes("peer_requester")) {
+          await connectionLogService.insert(JSON.parse(message));
+          this.wss.clients.forEach(function each(client: any) {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
               client.send(message);
             }
