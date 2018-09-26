@@ -46,7 +46,6 @@ class UserService {
         });
     }
 
-
     public getDistinctIpList(): Promise<Array<string>> {
         return new Promise((resolve, reject) => {
             const query = UserModel.find({}).distinct("ip");

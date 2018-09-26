@@ -20,7 +20,7 @@ export const success = async (req: Request, res: Response) => {
     const useremail = req.session.user.email;
     if (config.isMaidsafeOnly) {
       if (!useremail.endsWith("maidsafe.net")) {
-        return res.redirect("/error.html?err=" + "Only for MaidSafe users");
+        return res.redirect("/error.html?err=" + "Restricted to MaidSafe internal testing");
       }
     }
 

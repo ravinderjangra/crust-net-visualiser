@@ -34,6 +34,11 @@ class ConnectionLogService {
             ConnectionLogModel.find({}, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs));
         });
     }
+
+    // TODO: implement the duplicate finder query
+    getPossibleDuplicate(log: ConnectionLog): Promise<Boolean> {
+        return Promise.resolve(false);
+    }
 }
 
 const connectionLogService = new ConnectionLogService;
