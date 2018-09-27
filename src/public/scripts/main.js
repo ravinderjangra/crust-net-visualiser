@@ -1,3 +1,5 @@
+import { TimeoutError } from "bluebird";
+
 var BASE_URL = location.protocol + '//' + location.host;
 var HOST = BASE_URL + location.pathname.split('/').slice(0, -1).join('/') + '/';
 var loadingEle = $('#loading');
@@ -134,11 +136,8 @@ function onClickOpenStats() {
 
 
 function setTestnetTitle() {
-  var title = "ALPHA-3"
-  if (!title) {
-    return;
-  }
-  $('#testnetTitle').html(title.replace('-', ' ').toUpperCase());
+  var title = "CRUST TestNet-1";
+  $('#testnetTitle').html(title);
 }
 
 function setUpdateIpPage() {
