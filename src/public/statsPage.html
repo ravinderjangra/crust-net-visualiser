@@ -13,37 +13,51 @@
         table tr td {
             text-align: center;
         }
+
+        body {
+            background-color: #eee;
+        }
+
+        .pagination li:hover {
+            cursor: pointer;
+        }
     </style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
 </head>
 
 <body>
-    <table id="table" class="table table-bordered table-striped" style="width: 80%; margin: auto;">
 
-        <tr>
-            <th rowspan="2">TimeStamp</th>
-            <th colspan="3">Peer Requester</th>
-            <th colspan="3">Peer Responder</th>
-            <th rowspan="2">TCP HP</th>
-            <th rowspan="2">utp HP</th>
-            <th rowspan="2">Direct</th>
-        <tr>
-            <th scope="col">ip</th>
-            <th scope="col">nat_type</th>
-            <th scope="col">os</th>
-            <th scope="col">ip</th>
-            <th scope="col">nat_type</th>
-            <th scope="col">os</th>
-        </tr>
+    <div class="container">
 
-    </table>
+        <table id="table" class="table table-bordered table-striped" style="width: 80%; margin: auto;">
+            <tr>
+                <th rowspan="2">TimeStamp</th>
+                <th colspan="3">Peer Requester</th>
+                <th colspan="3">Peer Responder</th>
+                <th rowspan="2">TCP HP</th>
+                <th rowspan="2">utp HP</th>
+                <th rowspan="2">Direct</th>
+            </tr>
+            <tr id="tableHead">
+                <th scope="col">ip</th>
+                <th scope="col">nat_type</th>
+                <th scope="col">os</th>
+                <th scope="col">ip</th>
+                <th scope="col">nat_type</th>
+                <th scope="col">os</th>
+            </tr>
+
+        </table>
+    </div>
 </body>
 
 
 <script>
 
     $(document).ready(function () {
+
         $.ajax({
             url: "http://localhost:3000/api/stats",
             dataType: "json",
@@ -67,21 +81,23 @@
             }
         });
 
+
         if ("WebSocket" in window) {
             // Let us open a web socket
             var ws = new WebSocket("ws://localhost:4444");
 
             ws.onopen = function () {
                 // Web Socket is connected, send data using send()
-                ws.send("Message to send");
+                // ws.send("Message to send");
             };
 
             ws.onmessage = function (evt) {
                 alert("Message is received...");
-                if (evt.data.includes("ConnectionId")) {
+                if (evt.data.includes("peer_requester")) {
                     var json = JSON.parse(evt.data);
                     console.log(json);
                     var tr;
+                    tr = $('<tr/>');
                     tr.append("<td>" + new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString() + "</td>");
                     tr.append("<td>" + json.peer_requester.ip + "</td>");
                     tr.append("<td>" + json.peer_requester.nat_type + "</td>");
@@ -92,7 +108,7 @@
                     tr.append("<td>" + json.tcp_hole_punch_result + "</td>");
                     tr.append("<td>" + utpString(json.utp_hole_punch_result.Succeeded) + "</td>");
                     tr.append("<td>" + json.is_direct_successful + "</td>");
-                    $('table').append(tr);
+                    tr.insertAfter("#tableHead");
                 }
             };
 

@@ -15,8 +15,8 @@ import discourseRouter from "./auth/discourse";
 import WebSocketServer from "./WebSocketServer";
 import * as homeController from "./controllers/home";
 import { getClientIp, updateIpFile } from "./util/helpers";
-import userService from "./models/User";
-import connectionLogService from "./models/ConnectionLog";
+import userService from "./services/userservice";
+import connectionLogService from "./services/connectionlogservice";
 
 const MongoStore = mongo(session);
 

@@ -1,5 +1,5 @@
 import * as WebSocket from "ws";
-import connectionLogService from "./models/ConnectionLog";
+import connectionLogService from "./services/connectionlogservice";
 import { ConnectionLog } from "Apptypes";
 import { generateLogHash } from "./util/helpers";
 

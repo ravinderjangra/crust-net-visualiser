@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import userService from "../models/User";
+import userService from "../services/userService";
 const config = require("../config/app.json");
 /**
  * GET /

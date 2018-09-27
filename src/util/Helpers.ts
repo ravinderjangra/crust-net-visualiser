@@ -1,4 +1,4 @@
-import userService from "../models/User";
+import userService from "../services/userservice";
 import fs from "fs";
 import { ConnectionLog } from "Apptypes";
 import crypto from "crypto";
