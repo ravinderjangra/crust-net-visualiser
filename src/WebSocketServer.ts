@@ -3,20 +3,20 @@ import connectionLogService from "./models/ConnectionLog";
 import { ConnectionLog } from "Apptypes";
 
 interface QMsg {
-  data: ConnectionLog,
-  executor: Function
+  data: ConnectionLog;
+  executor: Function;
 }
 
 class Queue {
   private messages: Array<QMsg> = new Array;
   private isRunning = false;
-  
+
   private next() {
     if (this.messages.length === 0) {
       this.isRunning = false;
       return;
     }
-    const tempMsg = this.messages.splice(0,1)[0];
+    const tempMsg = this.messages.splice(0, 1)[0];
     tempMsg.executor(tempMsg.data, () => {
       this.next();
     });
@@ -51,7 +51,7 @@ export default class WebSocketServer {
     try {
       const hasDuplicate = await connectionLogService.getPossibleDuplicate(log);
       if (hasDuplicate) {
-        console.log('Ignored potential duplicate');
+        console.log("Ignored potential duplicate");
         return;
       }
       await connectionLogService.insert(log);
