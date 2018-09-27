@@ -118,6 +118,7 @@ app.get("/api/updateIp", async (req, res) => {
       email: user.email,
       strategy: user.strategy
     });
+    req.session.user.ip = user.cip;
     await updateIpFile();
     res.sendStatus(200);
   } catch (e) {

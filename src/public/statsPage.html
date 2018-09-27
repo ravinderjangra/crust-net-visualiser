@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Log Stats</title>
+    <script src="scripts/jquery-3.2.1.min.js"></script>
+    <style>
+        table tr th {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        table tr td {
+            text-align: center;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <table id="table" class="table table-bordered table-striped" style="width: 80%; margin: auto;">
+
+        <tr>
+            <th rowspan="2">TimeStamp</th>
+            <th colspan="3">Peer Requester</th>
+            <th colspan="3">Peer Responder</th>
+            <th rowspan="2">TCP HP</th>
+            <th rowspan="2">utp HP</th>
+            <th rowspan="2">Direct</th>
+        <tr>
+            <th scope="col">ip</th>
+            <th scope="col">nat_type</th>
+            <th scope="col">os</th>
+            <th scope="col">ip</th>
+            <th scope="col">nat_type</th>
+            <th scope="col">os</th>
+        </tr>
+
+    </table>
+</body>
+
+
+<script>
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "http://localhost:3000/api/stats",
+            dataType: "json",
+            success: function (json) {
+                console.log(json); // server response
+                var tr;
+                for (var i = 0; i < json.length; i++) {
+                    tr = $('<tr/>');
+                    tr.append("<td>" + new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString() + "</td>");
+                    tr.append("<td>" + json[i].peer_requester.ip + "</td>");
+                    tr.append("<td>" + json[i].peer_requester.nat_type + "</td>");
+                    tr.append("<td>" + json[i].peer_requester.os + "</td>");
+                    tr.append("<td>" + json[i].peer_responder.ip + "</td>");
+                    tr.append("<td>" + json[i].peer_responder.nat_type + "</td>");
+                    tr.append("<td>" + json[i].peer_responder.os + "</td>");
+                    tr.append("<td>" + json[i].tcp_hole_punch_result + "</td>");
+                    tr.append("<td>" + utpString(json[i].utp_hole_punch_result.Succeeded) + "</td>");
+                    tr.append("<td>" + json[i].is_direct_successful + "</td>");
+                    $('table').append(tr);
+                }
+            }
+        });
+
+        if ("WebSocket" in window) {
+            // Let us open a web socket
+            var ws = new WebSocket("ws://localhost:4444");
+
+            ws.onopen = function () {
+                // Web Socket is connected, send data using send()
+                ws.send("Message to send");
+            };
+
+            ws.onmessage = function (evt) {
+                alert("Message is received...");
+                if (evt.data.includes("ConnectionId")) {
+                    var json = JSON.parse(evt.data);
+                    console.log(json);
+                    var tr;
+                    tr.append("<td>" + new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString() + "</td>");
+                    tr.append("<td>" + json.peer_requester.ip + "</td>");
+                    tr.append("<td>" + json.peer_requester.nat_type + "</td>");
+                    tr.append("<td>" + json.peer_requester.os + "</td>");
+                    tr.append("<td>" + json.peer_responder.ip + "</td>");
+                    tr.append("<td>" + json.peer_responder.nat_type + "</td>");
+                    tr.append("<td>" + json.peer_responder.os + "</td>");
+                    tr.append("<td>" + json.tcp_hole_punch_result + "</td>");
+                    tr.append("<td>" + utpString(json.utp_hole_punch_result.Succeeded) + "</td>");
+                    tr.append("<td>" + json.is_direct_successful + "</td>");
+                    $('table').append(tr);
+                }
+            };
+
+            ws.onclose = function () {
+
+                // websocket is closed.
+                alert("Connection is closed...");
+            };
+        } else {
+            // The browser doesn't support WebSocket
+            alert("WebSocket NOT supported by your Browser!");
+        }
+    });
+
+    function utpString(utpdata) {
+        if (typeof utpdata != "undefined")
+            return utpdata.time_spent.secs + " sec";
+    }
+
+</script>
+
+</html>

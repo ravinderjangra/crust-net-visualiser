@@ -13,7 +13,7 @@ const UserSchema: Schema = new Schema({
     createdAt: Date
 });
 
-UserSchema.pre("save", function (next: Function) {
+UserSchema.pre("validate", function (next: Function) {
     const now = new Date();
     if (!this.createdAt) {
         this.createdAt = now;

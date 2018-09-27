@@ -14,7 +14,7 @@ export const ConnectionLogSchema = new Schema({
     createdAt: Date
 });
 
-ConnectionLogSchema.pre("save", function (next: Function) {
+ConnectionLogSchema.pre("validate", function (next) {
     const now = new Date();
     if (!this.createdAt) {
         this.createdAt = now;
@@ -32,7 +32,7 @@ class ConnectionLogService {
 
     list(): Promise<Array<ConnectionLog>> {
         return new Promise((resolve, reject) => {
-            ConnectionLogModel.find({}, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs));
+            ConnectionLogModel.find({}, { _id: 0, logDataHash: 0, _v: 0 }, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs)).sort("-createdAt");
         });
     }
 

@@ -54,12 +54,14 @@ export default class WebSocketServer {
       const hasDuplicate = await connectionLogService.getPossibleDuplicate(log);
       if (hasDuplicate) {
         console.log("Ignored potential duplicate");
-        return;
+        return next();
       }
+
       await connectionLogService.insert(log);
       this.wss.clients.forEach(function each(client: any) {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(log);
+          log.createdAt = new Date();
+          client.send(JSON.stringify(log));
         }
       });
       next();
@@ -80,12 +82,14 @@ export default class WebSocketServer {
       // connection is up, let's add a simple simple event
       ws.on("message", async (message: string) => {
         // console.log(`Received -> ${message}`);
-        this.queue.push({
-          data: JSON.parse(message),
-          executor: (data: ConnectionLog, next: Function) => {
-            this.onMsgHandler(ws, data, next);
-          }
-        });
+        if (message.includes("peer_requester")) {
+          this.queue.push({
+            data: JSON.parse(message),
+            executor: (data: ConnectionLog, next: Function) => {
+              this.onMsgHandler(ws, data, next);
+            }
+          });
+        }
       });
     });
     this.wss.on("error", function (e) {
