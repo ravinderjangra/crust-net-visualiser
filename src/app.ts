@@ -14,10 +14,9 @@ import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
 import discourseRouter from "./auth/discourse";
 import WebSocketServer from "./WebSocketServer";
 import * as homeController from "./controllers/home";
-import { getCiphers } from "crypto";
-import UserModel from "./models/User";
-import { getClientIp } from "./util/helpers";
+import { getClientIp, updateIpFile } from "./util/helpers";
 import userService from "./models/User";
+import connectionLogService from "./models/ConnectionLog";
 
 const MongoStore = mongo(session);
 
@@ -99,6 +98,7 @@ app.get("/api/profile", (req, res) => {
     return res.sendStatus(401);
   }
   const cip = getClientIp(req);
+  req.session.user.ip = req.session.user.ip || "";
   req.session.user.cip = cip;
   res.send(req.session.user);
 });
@@ -118,12 +118,21 @@ app.get("/api/updateIp", async (req, res) => {
       email: user.email,
       strategy: user.strategy
     });
+    await updateIpFile();
     res.sendStatus(200);
   } catch (e) {
     res.send(e);
   }
 });
 
+app.get("/api/stats", async (req, res) => {
+  try {
+    const list = await connectionLogService.list();
+    res.send(list);
+  } catch (e) {
+    res.send(e);
+  }
+});
 
 // app.get("/auth/failure", homeController.failure);
 

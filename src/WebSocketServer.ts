@@ -1,6 +1,7 @@
 import * as WebSocket from "ws";
 import connectionLogService from "./models/ConnectionLog";
 import { ConnectionLog } from "Apptypes";
+import { generateLogHash } from "./util/helpers";
 
 interface QMsg {
   data: ConnectionLog;
@@ -49,6 +50,7 @@ export default class WebSocketServer {
 
   private async onMsgHandler(ws: WebSocket, log: ConnectionLog, next: Function) {
     try {
+      log.logDataHash = generateLogHash(log);
       const hasDuplicate = await connectionLogService.getPossibleDuplicate(log);
       if (hasDuplicate) {
         console.log("Ignored potential duplicate");

@@ -24,6 +24,7 @@ interface ConnectionLog {
     is_direct_successful: boolean;
     utp_hole_punch_result: string | TimeSpent;
     tcp_hole_punch_result: string | TimeSpent;
+    logDataHash: string;
 }
 
 interface User {

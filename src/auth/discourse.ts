@@ -18,7 +18,8 @@ const sign = (data: any, secret: any) => {
     return hmac.digest("hex");
 };
 
-const returnUrl = "http://localhost:3000/auth/discourse/callback"; // config.authReturnUrl[(process.env.NODE_ENV || "prod").trim()];
+// TODO: Update url before deployment
+const returnUrl = config.authReturnUrl;
 
 const router = express.Router();
 

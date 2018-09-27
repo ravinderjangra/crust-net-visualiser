@@ -10,6 +10,7 @@ export const ConnectionLogSchema = new Schema({
     is_direct_successful: Boolean,
     utp_hole_punch_result: Object,
     tcp_hole_punch_result: Object,
+    logDataHash: String,
     createdAt: Date
 });
 
@@ -35,9 +36,13 @@ class ConnectionLogService {
         });
     }
 
-    // TODO: implement the duplicate finder query
     getPossibleDuplicate(log: ConnectionLog): Promise<Boolean> {
-        return Promise.resolve(false);
+        return new Promise((resolve, reject) => {
+            ConnectionLogModel.count({ "logDataHash": log.logDataHash }, function (err, c) {
+                c > 0 ? resolve(true) : resolve(false);
+            });
+        });
+
     }
 }
 

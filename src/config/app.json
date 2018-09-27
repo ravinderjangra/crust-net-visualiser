@@ -1,7 +1,7 @@
 {
     "discourseUrl": "https://safenetforum.org",
     "trustLevel": 1,
-    "isMaidsafeOnly": true,
+    "isMaidsafeOnly": false,
     "mongo": "mongodb://localhost/crustnet",
     "authConfirmURL": "/auth/success",
     "superAdmins": [
@@ -11,10 +11,7 @@
     "testnets": [
         "TEST-1"
     ],
-    "authReturnUrl": {
-        "dev": "http://localhost:3000/auth/discourse/callback",
-        "prod": "https://crustnet.maidsafe.net/auth/discourse/callback"
-    },
+    "authReturnUrl": "http://localhost:3000/auth/discourse/callback",
     "whitelistIpFile": {
         "path": "D:\\crust-net-visualiser\\",
         "filename": "config.json",

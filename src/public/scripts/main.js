@@ -1,4 +1,4 @@
-import { TimeoutError } from "bluebird";
+// import { TimeoutError } from "bluebird";
 
 var BASE_URL = location.protocol + '//' + location.host;
 var HOST = BASE_URL + location.pathname.split('/').slice(0, -1).join('/') + '/';
@@ -142,22 +142,23 @@ function setTestnetTitle() {
 
 function setUpdateIpPage() {
   setTestnetTitle();
-  setLoading(true);
   setIpDetails();
 };
-
-function setIpDetails() {
-  getUserData()
-    .then(function (res) {
-      setLoading(false);
-      setCurrentIp(res.data.ip, res.data.cip);
-    });
-}
 
 function getUserData() {
   var url = "/api/profile";
   return get(url);
 }
+
+function setIpDetails() {
+  setLoading(true);
+  getUserData()
+    .then(function (res) {
+      setLoading(false);
+      setCurrentIp(res.data.ip, res.data.cip);
+    }).catch(e => console.error(e));
+}
+
 
 function updateIp() {
   let url = '/api/updateIp';
@@ -168,9 +169,9 @@ function onClickUpdateIP() {
   setLoading(true);
   updateIp()
     .then(function (res) {
-      alert("IP Updated");
-      setLoading(false);
       setIpDetails();
+      setLoading(false);
+      alert("IP Updated");
     }).catch(function (err) {
       setLoading(false);
       alert('Error : ', err.message);
