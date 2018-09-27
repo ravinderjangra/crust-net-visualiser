@@ -65,7 +65,7 @@ app.use(lusca.xssProtection(true));
 // });
 
 app.use(
-  express.static(path.join(__dirname, "public"), { maxAge: 31557600000 })
+  express.static(path.join(__dirname, "public"))
 );
 
 app.get("/test", async (req, res) => {
