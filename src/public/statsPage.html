@@ -46,17 +46,19 @@
             <thead>
                 <tr>
                     <th rowspan="2">TimeStamp</th>
-                    <th colspan="3">Peer Requester</th>
-                    <th colspan="3">Peer Responder</th>
+                    <th colspan="4">Peer Requester</th>
+                    <th colspan="4">Peer Responder</th>
                     <th rowspan="2">TCP HP</th>
                     <th rowspan="2">utp HP</th>
                     <th rowspan="2">Direct</th>
                 </tr>
                 <tr>
                     <th scope="col">ip</th>
+                    <th scope="col">location</th>
                     <th scope="col">nat_type</th>
                     <th scope="col">os</th>
                     <th scope="col">ip</th>
+                    <th scope="col">location</th>
                     <th scope="col">nat_type</th>
                     <th scope="col">os</th>
                 </tr>
@@ -71,7 +73,9 @@
 
 <script>
     var datatable = $('#table').dataTable();
+
     $(document).ready(function () {
+
 
         fetchData();
 
@@ -91,9 +95,11 @@
                     datatable.fnAddData([
                         new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString(),
                         json.peer_requester.ip,
+                        json.peer_requester.geo_info == undefined ? "Not Available" : json.peer_requester.geo_info.country_name,
                         json.peer_requester.nat_type,
                         json.peer_requester.os,
                         json.peer_responder.ip,
+                        json.peer_responder.geo_info == undefined ? "Not Available" : json.peer_requester.geo_info.country_name,
                         json.peer_responder.nat_type,
                         json.peer_responder.os,
                         json.tcp_hole_punch_result,
@@ -147,9 +153,11 @@
                     datatable.fnAddData([
                         new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString(),
                         json[i].peer_requester.ip,
+                        json[i].peer_requester.geo_info == undefined ? "Not Available" : json[i].peer_requester.geo_info.country_name,
                         json[i].peer_requester.nat_type,
                         json[i].peer_requester.os,
                         json[i].peer_responder.ip,
+                        json[i].peer_requester.geo_info == undefined ? "Not Available" : json[i].peer_requester.geo_info.country_name,
                         json[i].peer_responder.nat_type,
                         json[i].peer_responder.os,
                         json[i].tcp_hole_punch_result,
