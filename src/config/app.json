@@ -1,0 +1,20 @@
+{
+    "discourseUrl": "https://safenetforum.org",
+    "trustLevel": 1,
+    "isMaidsafeOnly": false,
+    "mongo": "mongodb://localhost/crustnet",
+    "authConfirmURL": "/auth/success",
+    "superAdmins": [
+        "krishna.kumar@maidsafe.net",
+        "viv.rajkumar@maidsafe.net"
+    ],
+    "testnets": [
+        "TEST-1"
+    ],
+    "authReturnUrl": "http://localhost:3000/auth/discourse/callback",
+    "whitelistIpFile": {
+        "path": "D:\\crust-net-visualiser\\",
+        "filename": "config.json",
+        "templatePath": "../config/template.json"
+    }
+}
