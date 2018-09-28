@@ -120,7 +120,7 @@ app.get("/api/updateIp", async (req, res) => {
     });
     req.session.user.ip = user.cip;
     await updateIpFile();
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (e) {
     res.send(e);
   }
