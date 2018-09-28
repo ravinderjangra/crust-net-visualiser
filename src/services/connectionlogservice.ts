@@ -15,6 +15,12 @@ class ConnectionLogService {
         });
     }
 
+    listBetweenDates(startDate: Date, endDate: Date): Promise<Array<ConnectionLog>> {
+        return new Promise((resolve, reject) => {
+            ConnectionLogModel.find({ "createdAt": { "$gte": startDate, "$lt": endDate } }, { _id: 0, logDataHash: 0, _v: 0 }, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs)).sort("-createdAt");
+        });
+    }
+
     getPossibleDuplicate(log: ConnectionLog): Promise<Boolean> {
         return new Promise((resolve, reject) => {
             ConnectionLogModel.count({ "logDataHash": log.logDataHash }, function (err, c) {

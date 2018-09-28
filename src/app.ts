@@ -128,8 +128,16 @@ app.get("/api/updateIp", async (req, res) => {
 
 app.get("/api/stats", async (req, res) => {
   try {
-    const list = await connectionLogService.list();
-    res.send(list);
+    if (req.query.startdate && req.query.enddate) {
+      const startDate = new Date(req.query.startdate);
+      const endDate = new Date(req.query.enddate);
+      const list = await connectionLogService.listBetweenDates(startDate, endDate);
+      res.send(list);
+    }
+    else {
+      const list = await connectionLogService.list();
+      res.send(list);
+    }
   } catch (e) {
     res.send(e);
   }

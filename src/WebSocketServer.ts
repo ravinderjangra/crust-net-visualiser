@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import connectionLogService from "./services/connectionlogservice";
 import { ConnectionLog } from "Apptypes";
-import { generateLogHash } from "./util/helpers";
+import { generateLogHash, getGeoInfoFromIp } from "./util/helpers";
 
 interface QMsg {
   data: ConnectionLog;
@@ -56,6 +56,9 @@ export default class WebSocketServer {
         console.log("Ignored potential duplicate");
         return next();
       }
+
+      log.peer_requester.geo_info = await getGeoInfoFromIp(log.peer_requester.ip);
+      log.peer_responder.geo_info = await getGeoInfoFromIp(log.peer_responder.ip);
 
       await connectionLogService.insert(log);
       this.wss.clients.forEach(function each(client: any) {

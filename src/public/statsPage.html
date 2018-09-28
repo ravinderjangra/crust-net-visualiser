@@ -23,64 +23,57 @@
         }
     </style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 </head>
 
 <body>
+    <div class="container" style="width: 80%; margin: auto;">
+        <h2 style="text-align:center">Crust net logs</h2>
+        <form id="FilterForm" class="form-inline" align="right" style="margin:20px;">
+            <div class="form-group">
+                <label for="pwd">Start Date:</label>
+                <input type="date" class="form-control" id="startdatepicker" required>
+            </div>
+            <div class="form-group">
+                <label for="pwd">End Date:</label>
+                <input type="date" class="form-control" id="enddatepicker" required>
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+        <table id="table" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th rowspan="2">TimeStamp</th>
+                    <th colspan="3">Peer Requester</th>
+                    <th colspan="3">Peer Responder</th>
+                    <th rowspan="2">TCP HP</th>
+                    <th rowspan="2">utp HP</th>
+                    <th rowspan="2">Direct</th>
+                </tr>
+                <tr>
+                    <th scope="col">ip</th>
+                    <th scope="col">nat_type</th>
+                    <th scope="col">os</th>
+                    <th scope="col">ip</th>
+                    <th scope="col">nat_type</th>
+                    <th scope="col">os</th>
+                </tr>
+            </thead>
+            <tbody id="tableHead">
 
-    <div class="container">
-
-        <table id="table" class="table table-bordered table-striped" style="width: 80%; margin: auto;">
-            <tr>
-                <th rowspan="2">TimeStamp</th>
-                <th colspan="3">Peer Requester</th>
-                <th colspan="3">Peer Responder</th>
-                <th rowspan="2">TCP HP</th>
-                <th rowspan="2">utp HP</th>
-                <th rowspan="2">Direct</th>
-            </tr>
-            <tr id="tableHead">
-                <th scope="col">ip</th>
-                <th scope="col">nat_type</th>
-                <th scope="col">os</th>
-                <th scope="col">ip</th>
-                <th scope="col">nat_type</th>
-                <th scope="col">os</th>
-            </tr>
-
+            </tbody>
         </table>
     </div>
 </body>
 
 
 <script>
-
+    var datatable = $('#table').dataTable();
     $(document).ready(function () {
 
-        $.ajax({
-            url: "http://localhost:3000/api/stats",
-            dataType: "json",
-            success: function (json) {
-                console.log(json); // server response
-                var tr;
-                for (var i = 0; i < json.length; i++) {
-                    tr = $('<tr/>');
-                    tr.append("<td>" + new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString() + "</td>");
-                    tr.append("<td>" + json[i].peer_requester.ip + "</td>");
-                    tr.append("<td>" + json[i].peer_requester.nat_type + "</td>");
-                    tr.append("<td>" + json[i].peer_requester.os + "</td>");
-                    tr.append("<td>" + json[i].peer_responder.ip + "</td>");
-                    tr.append("<td>" + json[i].peer_responder.nat_type + "</td>");
-                    tr.append("<td>" + json[i].peer_responder.os + "</td>");
-                    tr.append("<td>" + json[i].tcp_hole_punch_result + "</td>");
-                    tr.append("<td>" + utpString(json[i].utp_hole_punch_result.Succeeded) + "</td>");
-                    tr.append("<td>" + json[i].is_direct_successful + "</td>");
-                    $('table').append(tr);
-                }
-            }
-        });
-
+        fetchData();
 
         if ("WebSocket" in window) {
             // Let us open a web socket
@@ -95,20 +88,18 @@
                 alert("Message is received...");
                 if (evt.data.includes("peer_requester")) {
                     var json = JSON.parse(evt.data);
-                    console.log(json);
-                    var tr;
-                    tr = $('<tr/>');
-                    tr.append("<td>" + new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString() + "</td>");
-                    tr.append("<td>" + json.peer_requester.ip + "</td>");
-                    tr.append("<td>" + json.peer_requester.nat_type + "</td>");
-                    tr.append("<td>" + json.peer_requester.os + "</td>");
-                    tr.append("<td>" + json.peer_responder.ip + "</td>");
-                    tr.append("<td>" + json.peer_responder.nat_type + "</td>");
-                    tr.append("<td>" + json.peer_responder.os + "</td>");
-                    tr.append("<td>" + json.tcp_hole_punch_result + "</td>");
-                    tr.append("<td>" + utpString(json.utp_hole_punch_result.Succeeded) + "</td>");
-                    tr.append("<td>" + json.is_direct_successful + "</td>");
-                    tr.insertAfter("#tableHead");
+                    datatable.fnAddData([
+                        new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString(),
+                        json.peer_requester.ip,
+                        json.peer_requester.nat_type,
+                        json.peer_requester.os,
+                        json.peer_responder.ip,
+                        json.peer_responder.nat_type,
+                        json.peer_responder.os,
+                        json.tcp_hole_punch_result,
+                        utpString(json.utp_hole_punch_result.Succeeded),
+                        json.is_direct_successful
+                    ]);
                 }
             };
 
@@ -123,11 +114,52 @@
         }
     });
 
+    $("#FilterForm").submit(function () {
+        var startdate = $("#startdatepicker").val();
+        var enddate = $("#enddatepicker").val();
+
+        if (startdate != undefined && enddate != undefined) {
+            fetchData(startdate, enddate);
+        }
+        return false;
+    });
+
     function utpString(utpdata) {
         if (typeof utpdata != "undefined")
             return utpdata.time_spent.secs + " sec";
     }
 
+    function fetchData(startdate, enddate) {
+
+        var url = "http://localhost:3000/api/stats";
+
+        if (startdate != undefined && enddate != undefined) {
+            url += "?startdate=" + startdate + "&enddate=" + enddate;
+        }
+
+        $.ajax({
+            url: url,
+            dataType: "json",
+            success: function (json) {
+                datatable.fnClearTable();
+                var tr;
+                for (var i = 0; i < json.length; i++) {
+                    datatable.fnAddData([
+                        new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString(),
+                        json[i].peer_requester.ip,
+                        json[i].peer_requester.nat_type,
+                        json[i].peer_requester.os,
+                        json[i].peer_responder.ip,
+                        json[i].peer_responder.nat_type,
+                        json[i].peer_responder.os,
+                        json[i].tcp_hole_punch_result,
+                        utpString(json[i].utp_hole_punch_result.Succeeded),
+                        json[i].is_direct_successful
+                    ]);
+                }
+            }
+        });
+    }
 </script>
 
 </html>
