@@ -102,8 +102,8 @@
                         json.peer_responder.geo_info == undefined ? "Not Available" : json.peer_requester.geo_info.country_name,
                         json.peer_responder.nat_type,
                         json.peer_responder.os,
-                        json.tcp_hole_punch_result,
-                        utpString(json.utp_hole_punch_result.Succeeded),
+                        utpString(json.tcp_hole_punch_result),
+                        utpString(json.utp_hole_punch_result),
                         json.is_direct_successful
                     ]);
                 }
@@ -131,8 +131,10 @@
     });
 
     function utpString(utpdata) {
-        if (typeof utpdata != "undefined")
-            return utpdata.time_spent.secs + " sec";
+        if (utpdata.Succeeded != undefined)
+            return utpdata.Succeeded.time_spent.secs + " sec";
+        else
+            return utpdata;
     }
 
     function fetchData(startdate, enddate) {
@@ -160,8 +162,8 @@
                         json[i].peer_requester.geo_info == undefined ? "Not Available" : json[i].peer_requester.geo_info.country_name,
                         json[i].peer_responder.nat_type,
                         json[i].peer_responder.os,
-                        json[i].tcp_hole_punch_result,
-                        utpString(json[i].utp_hole_punch_result.Succeeded),
+                        utpString(json[i].tcp_hole_punch_result),
+                        utpString(json[i].utp_hole_punch_result),
                         json[i].is_direct_successful
                     ]);
                 }
