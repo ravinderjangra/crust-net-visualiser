@@ -7,6 +7,10 @@ interface Success {
     Succeeded: TimeSpent;
 }
 
+interface EDMPorts {
+    EDMRandomPorts: string;
+}
+
 interface NatTraversal {
     result: boolean;
     timeSpent: TimeSpent;
@@ -15,7 +19,7 @@ interface NatTraversal {
 interface Peer {
     ip: string;
     geo_info: GeoInfo;
-    nat_type: string;
+    nat_type: string | EDMPorts;
     os: string;
 }
 
