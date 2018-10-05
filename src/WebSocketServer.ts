@@ -85,13 +85,27 @@ export default class WebSocketServer {
       // connection is up, let's add a simple simple event
       ws.on("message", async (message: string) => {
         // console.log(`Received -> ${message}`);
+
+        // Todo: Update code if crate code gets updated.
+        // Replacing chars to convert json string into json object.
+        message = message.toString().replace("\\", "\\\\")
+          .replace("\"{\"", "{\"")
+          .replace("}}}}\"", "}}}}")
+          .replace("}\"}", "}}");
+
         if (message.includes("peer_requester")) {
-          this.queue.push({
-            data: JSON.parse(message),
-            executor: (data: ConnectionLog, next: Function) => {
-              this.onMsgHandler(ws, data, next);
-            }
-          });
+          try {
+            // Extract msg data from the data received from websocket data
+            const msgData = JSON.parse(message).msg;
+            this.queue.push({
+              data: msgData,
+              executor: (data: ConnectionLog, next: Function) => {
+                this.onMsgHandler(ws, data, next);
+              }
+            });
+          } catch (e) {
+            return console.error(e.message);
+          }
         }
       });
     });
