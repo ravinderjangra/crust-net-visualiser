@@ -16,5 +16,7 @@
         "path": "D:\\crust-net-visualiser\\",
         "filename": "config.json",
         "templatePath": "../config/template.json"
-    }
+    },
+    "crustWsPort": 4444,
+    "dashboardWsPort": 44444
 }

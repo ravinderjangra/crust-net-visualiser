@@ -1,7 +1,10 @@
 import * as WebSocket from "ws";
 import connectionLogService from "./services/connectionlogservice";
 import { ConnectionLog } from "Apptypes";
-import { generateLogHash } from "./util/helpers";
+import { generateLogHash, getGeoInfoFromIp } from "./util/helpers";
+import http = require("http");
+import app from "./app";
+const config = require("./config/app.json");
 
 interface QMsg {
   data: ConnectionLog;
@@ -35,17 +38,25 @@ class Queue {
     this.messages.push(msg);
     this.start();
   }
-
 }
 
-
 export default class WebSocketServer {
-  private wss: WebSocket.Server;
+  private dashboardWS: WebSocket.Server;
+  private crustWS: WebSocket.Server;
   private queue: Queue;
   // private server: any;
-  constructor(port: number) {
-    this.wss = new WebSocket.Server({ port: port || 4444 });
+  constructor() {
+    this.dashboardWS = new WebSocket.Server({ port: config.dashboardWsPort });
+    this.createCrustWsServer();
     this.queue = new Queue;
+  }
+
+  private createCrustWsServer() {
+    const server = http.createServer(app);
+    this.crustWS = new WebSocket.Server({ server: server });
+    server.listen(config.crustWsPort, () => {
+      console.log(`Crust webSocketServer running on : ${config.crustWsPort} :)`);
+    });
   }
 
   private async onMsgHandler(ws: WebSocket, log: ConnectionLog, next: Function) {
@@ -57,9 +68,12 @@ export default class WebSocketServer {
         return next();
       }
 
+      log.peer_requester.geo_info = await getGeoInfoFromIp(log.peer_requester.ip);
+      log.peer_responder.geo_info = await getGeoInfoFromIp(log.peer_responder.ip);
+
       await connectionLogService.insert(log);
-      this.wss.clients.forEach(function each(client: any) {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
+      this.dashboardWS.clients.forEach(function each(client: any) {
+        if (client.readyState === WebSocket.OPEN) {
           log.createdAt = new Date();
           client.send(JSON.stringify(log));
         }
@@ -71,9 +85,44 @@ export default class WebSocketServer {
   }
 
   start() {
-    this.wss.on("connection", (ws: WebSocket) => {
-      // send immediatly a feedback to the incoming connection
-      ws.send("user connected");
+    this.crustWS.on("connection", (ws: WebSocket) => {
+      ws.send("crust ws client connected");
+
+      ws.on("error", function (e) {
+        console.log(e);
+      });
+
+      ws.on("message", async (message: string) => {
+        // console.log(`Received -> ${message}`);
+
+        // Todo: Update code if crate code gets updated.
+        // Replacing chars to convert json string into json object.
+        message = message.toString().replace("\\", "\\\\")
+          .replace("\"{\"", "{\"")
+          .replace("}}}}\"", "}}}}")
+          .replace("}\"}", "}}");
+        if (message.includes("peer_requester")) {
+          try {
+            // Extract msg data from the data received from websocket data
+            const msgData = JSON.parse(message).msg;
+            this.queue.push({
+              data: msgData,
+              executor: (data: ConnectionLog, next: Function) => {
+                this.onMsgHandler(ws, data, next);
+              }
+            });
+          } catch (e) {
+            return console.error(e.message);
+          }
+        }
+      });
+    });
+    this.crustWS.on("error", function (e) {
+      console.log(e);
+    });
+
+    this.dashboardWS.on("connection", (ws: WebSocket) => {
+      ws.send("dashboard ws client connected");
 
       ws.on("error", function (e) {
         console.log(e);
@@ -82,17 +131,13 @@ export default class WebSocketServer {
       // connection is up, let's add a simple simple event
       ws.on("message", async (message: string) => {
         // console.log(`Received -> ${message}`);
-        if (message.includes("peer_requester")) {
-          this.queue.push({
-            data: JSON.parse(message),
-            executor: (data: ConnectionLog, next: Function) => {
-              this.onMsgHandler(ws, data, next);
-            }
-          });
-        }
+      });
+
+      this.dashboardWS.on("error", function (e) {
+        console.log(e);
       });
     });
-    this.wss.on("error", function (e) {
+    this.dashboardWS.on("error", function (e) {
       console.log(e);
     });
   }

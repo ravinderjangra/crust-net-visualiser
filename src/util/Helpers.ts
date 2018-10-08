@@ -1,8 +1,8 @@
 import userService from "../services/userservice";
 import fs from "fs";
-import { ConnectionLog } from "Apptypes";
+import { ConnectionLog, GeoInfo } from "Apptypes";
 import crypto from "crypto";
-
+const iplocation = require("iplocation");
 const config = require("../config/app.json");
 
 const getClientIp = (req: any) => req.ip.replace("::ffff:", "");
@@ -31,7 +31,15 @@ const generateLogHash = (log: ConnectionLog): string => {
     return crypto.createHmac("sha256", "secret")
         .update(jsonData)
         .digest("hex");
-
 };
 
-export { updateIpFile, getClientIp, generateLogHash };
+const getGeoInfoFromIp = (ip: string): Promise<GeoInfo> => {
+    return new Promise((resolve, reject) => {
+        iplocation(ip, function (error: any, res: any) {
+            if (error) reject(error);
+            resolve(res);
+        });
+    });
+};
+
+export { updateIpFile, getClientIp, generateLogHash, getGeoInfoFromIp };

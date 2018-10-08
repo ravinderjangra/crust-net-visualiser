@@ -120,7 +120,7 @@ app.get("/api/updateIp", async (req, res) => {
     });
     req.session.user.ip = user.cip;
     await updateIpFile();
-    res.sendStatus(200);
+    return res.sendStatus(200);
   } catch (e) {
     res.send(e);
   }
@@ -128,8 +128,22 @@ app.get("/api/updateIp", async (req, res) => {
 
 app.get("/api/stats", async (req, res) => {
   try {
-    const list = await connectionLogService.list();
-    res.send(list);
+    if (req.query.startdate && req.query.enddate) {
+      const startDate = new Date(req.query.startdate);
+      const endDate = new Date(req.query.enddate);
+      const list = await connectionLogService.listBetweenDates(startDate, endDate);
+      res.send(list);
+    }
+    else if (req.query.pageNo) {
+      const pageNo = parseInt(req.query.pageNo);
+      const size = parseInt(req.query.size);
+      const list = await connectionLogService.paginate(size, pageNo);
+      res.send(list);
+    }
+    else {
+      const list = await connectionLogService.list();
+      res.send(list);
+    }
   } catch (e) {
     res.send(e);
   }
@@ -137,7 +151,7 @@ app.get("/api/stats", async (req, res) => {
 
 // app.get("/auth/failure", homeController.failure);
 
-const wsServer = new WebSocketServer(4444);
+const wsServer = new WebSocketServer();
 wsServer.start();
 
 export default app;
