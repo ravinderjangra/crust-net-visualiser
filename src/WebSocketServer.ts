@@ -101,7 +101,6 @@ export default class WebSocketServer {
           .replace("\"{\"", "{\"")
           .replace("}}}}\"", "}}}}")
           .replace("}\"}", "}}");
-        console.log(`Received -> ${message}`);
         if (message.includes("peer_requester")) {
           try {
             // Extract msg data from the data received from websocket data
@@ -131,7 +130,7 @@ export default class WebSocketServer {
 
       // connection is up, let's add a simple simple event
       ws.on("message", async (message: string) => {
-        console.log(`Received -> ${message}`);
+        // console.log(`Received -> ${message}`);
       });
 
       this.dashboardWS.on("error", function (e) {

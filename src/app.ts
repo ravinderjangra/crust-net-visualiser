@@ -134,24 +134,16 @@ app.get("/api/stats", async (req, res) => {
       const list = await connectionLogService.listBetweenDates(startDate, endDate);
       res.send(list);
     }
+    else if (req.query.pageNo) {
+      const pageNo = parseInt(req.query.pageNo);
+      const size = parseInt(req.query.size);
+      const list = await connectionLogService.paginate(size, pageNo);
+      res.send(list);
+    }
     else {
       const list = await connectionLogService.list();
       res.send(list);
     }
-  } catch (e) {
-    res.send(e);
-  }
-});
-
-app.get("/api/logs", async (req, res) => {
-  try {
-    if (!req.query.pageNo) {
-      return res.send(400);
-    }
-    const pageNo = parseInt(req.query.pageNo);
-    const size = parseInt(req.query.size);
-    const list = await connectionLogService.paginate(size, pageNo);
-    res.send(list);
   } catch (e) {
     res.send(e);
   }
