@@ -4,6 +4,7 @@ import { ConnectionLog } from "Apptypes";
 import { generateLogHash, getGeoInfoFromIp } from "./util/helpers";
 import http = require("http");
 import app from "./app";
+const config = require("./config/app.json");
 
 interface QMsg {
   data: ConnectionLog;
@@ -44,8 +45,8 @@ export default class WebSocketServer {
   private crustWS: WebSocket.Server;
   private queue: Queue;
   // private server: any;
-  constructor(port: number) {
-    this.dashboardWS = new WebSocket.Server({ port: port || 4444 });
+  constructor() {
+    this.dashboardWS = new WebSocket.Server({ port: config.dashboardWsPort });
     this.createCrustWsServer();
     this.queue = new Queue;
   }
@@ -53,8 +54,8 @@ export default class WebSocketServer {
   private createCrustWsServer() {
     const server = http.createServer(app);
     this.crustWS = new WebSocket.Server({ server: server });
-    server.listen(process.env.PORT || 44444, () => {
-      console.log(`Crust webSocketServer running on : 44444 :)`);
+    server.listen(config.crustWsPort, () => {
+      console.log(`Crust webSocketServer running on : ${config.crustWsPort} :)`);
     });
   }
 
@@ -71,12 +72,12 @@ export default class WebSocketServer {
       log.peer_responder.geo_info = await getGeoInfoFromIp(log.peer_responder.ip);
 
       await connectionLogService.insert(log);
-      // this.wss.clients.forEach(function each(client: any) {
-      //   if (client !== ws && client.readyState === WebSocket.OPEN) {
-      //     log.createdAt = new Date();
-      //     client.send(JSON.stringify(log));
-      //   }
-      // });
+      this.dashboardWS.clients.forEach(function each(client: any) {
+        if (client.readyState === WebSocket.OPEN) {
+          log.createdAt = new Date();
+          client.send(JSON.stringify(log));
+        }
+      });
       next();
     } catch (e) {
       console.log(e);
@@ -85,13 +86,12 @@ export default class WebSocketServer {
 
   start() {
     this.crustWS.on("connection", (ws: WebSocket) => {
-      ws.send("crust user connected");
+      ws.send("crust ws client connected");
 
       ws.on("error", function (e) {
         console.log(e);
       });
 
-      // connection is up, let's add a simple simple event
       ws.on("message", async (message: string) => {
         // console.log(`Received -> ${message}`);
 
@@ -101,7 +101,7 @@ export default class WebSocketServer {
           .replace("\"{\"", "{\"")
           .replace("}}}}\"", "}}}}")
           .replace("}\"}", "}}");
-
+        console.log(`Received -> ${message}`);
         if (message.includes("peer_requester")) {
           try {
             // Extract msg data from the data received from websocket data
@@ -123,8 +123,7 @@ export default class WebSocketServer {
     });
 
     this.dashboardWS.on("connection", (ws: WebSocket) => {
-      // send immediatly a feedback to the incoming connection
-      ws.send("dashboard user connected");
+      ws.send("dashboard ws client connected");
 
       ws.on("error", function (e) {
         console.log(e);

@@ -159,7 +159,7 @@ app.get("/api/logs", async (req, res) => {
 
 // app.get("/auth/failure", homeController.failure);
 
-const wsServer = new WebSocketServer(4444);
+const wsServer = new WebSocketServer();
 wsServer.start();
 
 export default app;
