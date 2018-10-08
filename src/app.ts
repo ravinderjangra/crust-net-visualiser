@@ -143,6 +143,20 @@ app.get("/api/stats", async (req, res) => {
   }
 });
 
+app.get("/api/logs", async (req, res) => {
+  try {
+    if (!req.query.pageNo) {
+      return res.send(400);
+    }
+    const pageNo = parseInt(req.query.pageNo);
+    const size = parseInt(req.query.size);
+    const list = await connectionLogService.paginate(size, pageNo);
+    res.send(list);
+  } catch (e) {
+    res.send(e);
+  }
+});
+
 // app.get("/auth/failure", homeController.failure);
 
 const wsServer = new WebSocketServer(4444);

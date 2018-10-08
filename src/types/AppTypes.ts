@@ -63,4 +63,9 @@ interface User {
     ip: string;
 }
 
-export { TimeSpent, Success, NatTraversal, Peer, ConnectionLog, User, GeoInfo };
+interface PaginateResponse {
+    logs: Array<ConnectionLog>;
+    totalPages: number;
+}
+
+export { TimeSpent, Success, NatTraversal, Peer, ConnectionLog, User, GeoInfo, PaginateResponse };
