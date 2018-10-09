@@ -1,46 +1,187 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SAFE Network - Testnet Invite</title>
-  <link rel="shortcut icon" type="image/png" href="./favicon.png"/>
-  <link rel="stylesheet" href="css/main.css" type="text/css" />
+    <title>Log Stats</title>
+    <script src="scripts/jquery-3.2.1.min.js"></script>
+    <style>
+        table tr th {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        table tr td {
+            text-align: center;
+        }
+
+        body {
+            background-color: #eee;
+        }
+
+        .pagination li:hover {
+            cursor: pointer;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 </head>
+
 <body>
-  <div class="root">
-    <!-- Base vertical center aligned -->
-    <div class="base-vertical-center">
-      <div class="base-vertical-center-b">
-        <div class="base-vertical-center-cont">
-          <!-- Container card -->
-          <div class="container-card">
-            <div class="container-card-b">
-              <h3 class="title">SAFE Network - CRUST Testnet</h3>
-              <div class="cntr">
-                <!-- Auth choice -->
-                <div class="auth-choice">
-                  <div class="desc">
-                    <!--<p class="p">Sign in using one of the following services to claim your invite for the SAFE Network Testnet.</p>-->
-                    <!--<p class="p">Alternatively, you can request an invite from the SAFE Network Forum.</p>-->
-                    <p class="p">Sign in using your forum account to claim your invite for the SAFE Network Testnet.</p>
-                    <p class="small">This testnet is currently limited to forum users who are at least Trust Level 1. See
-                      <a href="https://safenetforum.org/t/trust-level-1-requirements/15200" target="_blank">this topic</a> for more information.
-                    </p>
-                  </div>
-                  <div class="auth-choice-b">
-                    <!--<div class="auth-choice-i"><a href="/auth/google/login"><span class="icn google"></span></a><span class="name">Google</span></div>-->
-                    <!--<div class="auth-choice-i"><a href="#" target="_blank"><span class="icn github"></span></a><span class="name">Github</span></div>-->
-                    <!--<div class="auth-choice-i"><a href="#" target="_blank"><span class="icn twitter"></span></a><span class="name">Twitter</span></div>-->
-                    <div class="auth-choice-i"><div class="auth-choice-i-b"><a href="/auth/discourse/login"><span class="icn safenet"></span><span class="name">SAFE Network Forum</span></a></div></div>
-                  </div>
-                </div>
-              </div>
+    <div class="container" style="width: 80%; margin: auto;">
+        <div style="display:flex; margin-top: 10px;">
+            <div style="text-align:center;flex:1 0 auto;">
+                <h2>Crust net logs</h2>
             </div>
-          </div>
+            <a href="/auth.html" target="_blank">
+                <button class="btn btn-success btn-md">Auth</button>
+            </a>
         </div>
-      </div>
+
+        <form id="FilterForm" class="form-inline" align="right" style="margin:20px;">
+            <div class="form-group">
+                <label for="pwd">Start Date:</label>
+                <input type="date" class="form-control" id="startdatepicker" required>
+            </div>
+            <div class="form-group">
+                <label for="pwd">End Date:</label>
+                <input type="date" class="form-control" id="enddatepicker" required>
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+        <table id="table" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th rowspan="2">TimeStamp</th>
+                    <th colspan="3">Peer Requester</th>
+                    <th colspan="3">Peer Responder</th>
+                    <th rowspan="2">TCP HP</th>
+                    <th rowspan="2">utp HP</th>
+                    <th rowspan="2">Direct</th>
+                    <th rowspan="2">Hairpinned</th>
+                </tr>
+                <tr>
+                    <th scope="col">location</th>
+                    <th scope="col">nat_type</th>
+                    <th scope="col">os</th>
+                    <th scope="col">location</th>
+                    <th scope="col">nat_type</th>
+                    <th scope="col">os</th>
+                </tr>
+            </thead>
+            <tbody id="tableHead">
+
+            </tbody>
+        </table>
     </div>
-  </div>
 </body>
+
+
+<script>
+    var datatable = $('#table').dataTable();
+
+    $(document).ready(function () {
+
+
+        fetchData();
+
+        if ("WebSocket" in window) {
+            // Let us open a web socket
+            var ws = new WebSocket("ws://localhost:4444");
+
+            ws.onopen = function () {
+                // Web Socket is connected, send data using send()
+                // ws.send("Message to send");
+            };
+
+            ws.onmessage = function (evt) {
+                alert("Message is received...");
+                if (evt.data.includes("peer_requester")) {
+                    var json = JSON.parse(evt.data);
+                    datatable.fnAddData([
+                        new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString(),
+                        json.peer_requester.geo_info.country_name == undefined ? "N/A" : json.peer_requester.geo_info.country_name,
+                        natTypeString(json.peer_requester.nat_type),
+                        json.peer_requester.os,
+                        json.peer_responder.geo_info.country_name == undefined ? "N/A" : json.peer_requester.geo_info.country_name,
+                        natTypeString(json.peer_responder.nat_type),
+                        json.peer_responder.os,
+                        ConnectionDataString(json.tcp_hole_punch_result),
+                        ConnectionDataString(json.utp_hole_punch_result),
+                        json.is_direct_successful,
+                        json[i].isHairpinned == undefined ? "N/A" : json[i].isHairpinned
+                    ]);
+                }
+            };
+
+            ws.onclose = function () {
+
+                // websocket is closed.
+                alert("Connection is closed...");
+            };
+        } else {
+            // The browser doesn't support WebSocket
+            alert("WebSocket NOT supported by your Browser!");
+        }
+    });
+
+    $("#FilterForm").submit(function () {
+        var startdate = $("#startdatepicker").val();
+        var enddate = $("#enddatepicker").val();
+
+        if (startdate != undefined && enddate != undefined) {
+            fetchData(startdate, enddate);
+        }
+        return false;
+    });
+
+    function ConnectionDataString(connectiondata) {
+        if (connectiondata.Succeeded != undefined)
+            return connectiondata.Succeeded.time_spent.secs + " sec";
+        else
+            return connectiondata;
+    }
+
+    function natTypeString(nettypedata) {
+        if (nettypedata.EDMRandomPorts != undefined)
+            return "EDMRandomPorts";
+        else
+            return nettypedata;
+    }
+
+    function fetchData(startdate, enddate) {
+
+        var url = "http://localhost:3000/api/stats";
+
+        if (startdate != undefined && enddate != undefined) {
+            url += "?startdate=" + startdate + "&enddate=" + enddate;
+        }
+
+        $.ajax({
+            url: url,
+            dataType: "json",
+            success: function (json) {
+                datatable.fnClearTable();
+                var tr;
+                for (var i = 0; i < json.length; i++) {
+                    datatable.fnAddData([
+                        new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString(),
+                        json[i].peer_requester.geo_info.country_name == undefined ? "N/A" : json[i].peer_requester.geo_info.country_name,
+                        natTypeString(json[i].peer_requester.nat_type),
+                        json[i].peer_requester.os,
+                        json[i].peer_requester.geo_info.country_name == undefined ? "N/A" : json[i].peer_requester.geo_info.country_name,
+                        natTypeString(json[i].peer_responder.nat_type),
+                        json[i].peer_responder.os,
+                        ConnectionDataString(json[i].tcp_hole_punch_result),
+                        ConnectionDataString(json[i].utp_hole_punch_result),
+                        json[i].is_direct_successful,
+                        json[i].isHairpinned == undefined ? "N/A" : json[i].isHairpinned
+                    ]);
+                }
+            }
+        });
+    }
+</script>
+
 </html>
