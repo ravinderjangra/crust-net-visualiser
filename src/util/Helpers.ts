@@ -5,7 +5,11 @@ import crypto from "crypto";
 const iplocation = require("iplocation");
 const config = require("../config/app.json");
 
-const getClientIp = (req: any) => req.ip.replace("::ffff:", "");
+const getClientIp = (req: any) => {
+    const ip = (req.headers["x-forwarded-for"] || req.connection.remoteAddress || "").split(",")[0].trim();
+    return ip.replace("::ffff:", "");
+};
+
 
 const updateIpFile = async () => {
     const ipList = await userService.getDistinctIpList();
