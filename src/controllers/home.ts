@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import userService from "../services/userService";
+import userService from "../services/userservice";
 const config = require("../config/app.json");
 /**
  * GET /
@@ -31,13 +31,11 @@ export const success = async (req: Request, res: Response) => {
     }
     else {
       await userService.upsert(req.session.user).then(() => {
-        userService.findbyId(req.session.user.userId).then(function (user) {
+        userService.findbyId(req.session.user.userId).then(function (user: any) {
           console.log(user);
           req.session.user = user;
           res.redirect("/update_ip.html");
         });
-      }).catch(e => {
-        res.redirect("/error.html?err=" + e.message);
       });
     }
   } catch (e) {
