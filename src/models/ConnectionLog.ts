@@ -11,6 +11,7 @@ export const ConnectionLogSchema = new Schema({
     utp_hole_punch_result: Object,
     tcp_hole_punch_result: Object,
     logDataHash: String,
+    isHairpinned: Boolean,
     createdAt: Date
 });
 
