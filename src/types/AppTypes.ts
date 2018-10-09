@@ -51,6 +51,7 @@ interface ConnectionLog {
     utp_hole_punch_result: string | TimeSpent;
     tcp_hole_punch_result: string | TimeSpent;
     logDataHash: string;
+    isHairpinned: boolean;
     createdAt: Date;
 }
 

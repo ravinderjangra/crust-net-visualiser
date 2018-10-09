@@ -68,6 +68,11 @@ export default class WebSocketServer {
         return next();
       }
 
+      if (log.peer_requester.ip === log.peer_responder.ip)
+        log.isHairpinned = true;
+      else
+        log.isHairpinned = false;
+
       log.peer_requester.geo_info = await getGeoInfoFromIp(log.peer_requester.ip);
       log.peer_responder.geo_info = await getGeoInfoFromIp(log.peer_responder.ip);
 
@@ -95,18 +100,14 @@ export default class WebSocketServer {
       ws.on("message", async (message: string) => {
         // console.log(`Received -> ${message}`);
 
-        // Todo: Update code if crate code gets updated.
-        // Replacing chars to convert json string into json object.
-        message = message.toString().replace("\\", "\\\\")
-          .replace("\"{\"", "{\"")
-          .replace("}}}}\"", "}}}}")
-          .replace("}\"}", "}}");
+        const msgData = JSON.parse(message).message;
+
         if (message.includes("peer_requester")) {
           try {
             // Extract msg data from the data received from websocket data
-            const msgData = JSON.parse(message).msg;
+            const data = JSON.parse(msgData);
             this.queue.push({
-              data: msgData,
+              data: data,
               executor: (data: ConnectionLog, next: Function) => {
                 this.onMsgHandler(ws, data, next);
               }

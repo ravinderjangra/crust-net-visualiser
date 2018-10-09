@@ -20,7 +20,7 @@ class ConnectionLogService {
 
     list(): Promise<Array<ConnectionLog>> {
         return new Promise((resolve, reject) => {
-            ConnectionLogModel.find({}, { _id: 0, __v: 0 }, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs))
+            ConnectionLogModel.find({ "isHairpinned": { "$in": ["false", false] } }, { _id: 0, __v: 0 }, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs))
                 .sort("-createdAt")
                 .select(this.ignoreFields);
         });
@@ -28,7 +28,7 @@ class ConnectionLogService {
 
     listBetweenDates(startDate: Date, endDate: Date): Promise<Array<ConnectionLog>> {
         return new Promise((resolve, reject) => {
-            ConnectionLogModel.find({ "createdAt": { "$gte": startDate, "$lt": endDate } }, { _id: 0, __v: 0 }, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs))
+            ConnectionLogModel.find({ "createdAt": { "$gte": startDate, "$lt": endDate }, "isHairpinned": { "$in": ["false", false] } }, { _id: 0, __v: 0 }, (err: Error, logs: Array<ConnectionLog>) => err ? reject(err) : resolve(logs))
                 .sort("-createdAt")
                 .select(this.ignoreFields);
         });
@@ -40,12 +40,12 @@ class ConnectionLogService {
                 skip: size * (pageNo - 1),
                 limit: size
             };
-            ConnectionLogModel.count({}, function (err, totalCount) {
+            ConnectionLogModel.count({ "isHairpinned": { "$in": ["false", false] } }, function (err, totalCount) {
                 if (err) {
                     reject(err);
                 }
                 const totalPages = Math.ceil(totalCount / size);
-                ConnectionLogModel.find({}, { _id: 0, __v: 0 }, query, function (err, data) {
+                ConnectionLogModel.find({ "isHairpinned": { "$in": ["false", false] } }, { _id: 0, __v: 0 }, query, function (err, data) {
                     if (err) {
                         reject(err);
                     } else {
