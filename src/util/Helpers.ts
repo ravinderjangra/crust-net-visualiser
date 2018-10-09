@@ -10,7 +10,7 @@ const getClientIp = (req: any) => req.ip.replace("::ffff:", "");
 const updateIpFile = async () => {
     const ipList = await userService.getDistinctIpList();
     const template = require(config.whitelistIpFile.templatePath);
-    template.whitelistIps = ipList;
+    template.whitelisted_client_ips = ipList;
     fs.writeFile(config.whitelistIpFile.path + config.whitelistIpFile.filename, JSON.stringify(template), function (error: any) {
         if (error) {
             return console.log(error);
