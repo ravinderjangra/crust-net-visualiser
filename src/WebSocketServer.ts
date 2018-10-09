@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import connectionLogService from "./services/connectionlogservice";
 import { ConnectionLog } from "./types/AppTypes";
-import { generateLogHash, getGeoInfoFromIp } from "./util/helpers";
+import { generateLogHash, getGeoInfoFromIp } from "./util/Helpers";
 import http = require("http");
 import app from "./app";
 const config = require("./config/app.json");

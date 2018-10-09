@@ -1,5 +1,5 @@
 import { Document, Schema, Model, model } from "mongoose";
-import { ConnectionLog } from "./../types/Apptypes";
+import { ConnectionLog } from "../types/AppTypes";
 
 export interface IConnectionLog extends ConnectionLog, Document {
 }

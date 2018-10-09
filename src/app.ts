@@ -14,7 +14,7 @@ import { MONGODB_URI, SESSION_SECRET } from "./util/secrets";
 import discourseRouter from "./auth/discourse";
 import WebSocketServer from "./WebSocketServer";
 import * as homeController from "./controllers/home";
-import { getClientIp, updateIpFile } from "./util/helpers";
+import { getClientIp, updateIpFile } from "./util/Helpers";
 import userService from "./services/userservice";
 import connectionLogService from "./services/connectionlogservice";
 
