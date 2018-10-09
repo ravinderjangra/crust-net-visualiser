@@ -1,4 +1,4 @@
-import { ConnectionLog, PaginateResponse } from "Apptypes";
+import { ConnectionLog, PaginateResponse } from "../types/AppTypes";
 
 import ConnectionLogModel from "../models/ConnectionLog";
 

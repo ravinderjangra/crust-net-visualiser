@@ -1,4 +1,4 @@
-import { User } from "Apptypes";
+import { User } from "../types/AppTypes";
 
 import UserModel from "../models/User";
 

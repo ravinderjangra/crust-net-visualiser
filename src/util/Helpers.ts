@@ -1,6 +1,6 @@
 import userService from "../services/userservice";
 import fs from "fs";
-import { ConnectionLog, GeoInfo } from "Apptypes";
+import { ConnectionLog, GeoInfo } from "../types/AppTypes";
 import crypto from "crypto";
 const iplocation = require("iplocation");
 const config = require("../config/app.json");
