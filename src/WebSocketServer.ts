@@ -68,11 +68,7 @@ export default class WebSocketServer {
         return next();
       }
 
-      if (log.peer_requester.ip === log.peer_responder.ip)
-        log.isHairpinned = true;
-      else
-        log.isHairpinned = false;
-
+      log.isHairpinned = (log.peer_requester.ip === log.peer_responder.ip);
       log.peer_requester.geo_info = await getGeoInfoFromIp(log.peer_requester.ip);
       log.peer_responder.geo_info = await getGeoInfoFromIp(log.peer_responder.ip);
 
