@@ -32,7 +32,6 @@ export const success = async (req: Request, res: Response) => {
     else {
       await userService.upsert(req.session.user).then(() => {
         userService.findbyId(req.session.user.userId).then(function (user: any) {
-          console.log(user);
           req.session.user = user;
           res.redirect("/update_ip.html");
         });
