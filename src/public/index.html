@@ -88,7 +88,7 @@
 
         if ("WebSocket" in window) {
             // Let us open a web socket
-            var ws = new WebSocket("ws://crustnet.maidsafe.net:8090");
+            var ws = new WebSocket("wss://crustnet.maidsafe.net:8081");
 
             ws.onopen = function () {
                 // Web Socket is connected, send data using send()
