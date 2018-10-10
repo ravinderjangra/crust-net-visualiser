@@ -23,7 +23,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
 </head>
@@ -88,7 +88,7 @@
 
         if ("WebSocket" in window) {
             // Let us open a web socket
-            var ws = new WebSocket("ws://localhost:4444");
+            var ws = new WebSocket("wss://crustnet.maidsafe.net/websocket/");
 
             ws.onopen = function () {
                 // Web Socket is connected, send data using send()
@@ -152,7 +152,7 @@
 
     function fetchData(startdate, enddate) {
 
-        var url = "http://localhost:3000/api/stats";
+        var url = "https://crustnet.maidsafe.net/api/stats";
 
         if (startdate != undefined && enddate != undefined) {
             url += "?startdate=" + startdate + "&enddate=" + enddate;
