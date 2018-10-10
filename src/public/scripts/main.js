@@ -136,7 +136,7 @@ function onClickOpenStats() {
 
 
 function setTestnetTitle() {
-  var title = "CRUST TestNet-1";
+  var title = "CRUST Test";
   $('#testnetTitle').html(title);
 }
 
