@@ -1,22 +1,23 @@
 {
     "discourseUrl": "https://safenetforum.org",
     "trustLevel": 1,
-    "isMaidsafeOnly": false,
+    "isMaidsafeOnly": true,
     "mongo": "mongodb://localhost/crusttest",
     "authConfirmURL": "/auth/success",
     "superAdmins": [
         "krishna.kumar@maidsafe.net",
+        "stephen.coyle@maidsafe.net",
         "viv.rajkumar@maidsafe.net"
     ],
     "testnets": [
         "TEST-1"
     ],
-    "authReturnUrl": "http://localhost:3000/auth/discourse/callback",
+    "authReturnUrl": "https://crustnet.maidsafe.net/auth/discourse/callback",
     "whitelistIpFile": {
-        "path": "D:\\crust-net-visualiser\\",
-        "filename": "config.json",
-        "templatePath": "../config/template.json"
+        "path": "/home/qa/p2p/",
+        "filename": "proxy.crust.config",
+        "templatePath": "/home/qa/p2p/template.json"
     },
-    "crustWsPort": 4444,
-    "dashboardWsPort": 44444
+    "crustWsPort": 55555,
+    "dashboardWsPort": 8090
 }

@@ -38,7 +38,7 @@ mongoose.connect(MONGODB_URI, { useMongoClient: true }).then(
   process.exit();
 });
 
-app.set("port", process.env.PORT || 3000);
+app.set("port", process.env.PORT || 8080);
 app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
