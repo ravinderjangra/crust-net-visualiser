@@ -12,7 +12,7 @@
     "testnets": [
         "TEST-1"
     ],
-    "authReturnUrl": "https://crustnet.maidsafe.net/auth/discourse/callback",
+    "authReturnUrl": "https://crusttest.maidsafe.net/auth/discourse/callback",
     "whitelistIpFile": {
         "path": "/home/qa/p2p/",
         "filename": "proxy.crust.config",
