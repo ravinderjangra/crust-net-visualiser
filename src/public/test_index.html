@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Safe Network :: Crust Test</title>
+    <script src="scripts/jquery-3.2.1.min.js"></script>
+    <style>
+        table tr th {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        table tr td {
+            text-align: center;
+        }
+
+        body {
+            background-color: #eee;
+        }
+
+        .pagination li:hover {
+            cursor: pointer;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.2/css/jquery.dataTables.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+</head>
+
+<body>
+    <div class="container" style="width: 80%; margin: auto;">
+        <div style="display:flex; margin-top: 10px;">
+            <div style="text-align:center;flex:1 0 auto;">
+                <h2>Crust test logs</h2>
+            </div>
+            <a href="/auth.html" target="_blank">
+                <button class="btn btn-success btn-md">Auth</button>
+            </a>
+        </div>
+
+        <form id="FilterForm" class="form-inline" align="right" style="margin:20px;">
+            <div class="form-group">
+                <label for="pwd">Start Date:</label>
+                <input type="date" class="form-control" id="startdatepicker" required>
+            </div>
+            <div class="form-group">
+                <label for="pwd">End Date:</label>
+                <input type="date" class="form-control" id="enddatepicker" required>
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+        <table id="table" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th rowspan="2">TimeStamp</th>
+                    <th colspan="3">Peer Requester</th>
+                    <th colspan="3">Peer Responder</th>
+                    <th rowspan="2">TCP HP</th>
+                    <th rowspan="2">UDP HP</th>
+                    <!-- <th rowspan="2">utp HP</th> -->
+                    <!-- <th rowspan="2">Direct</th> -->
+                    <th rowspan="2">Hairpinned</th>
+                </tr>
+                <tr>
+                    <th scope="col">location</th>
+                    <th scope="col">nat_type</th>
+                    <th scope="col">os</th>
+                    <th scope="col">location</th>
+                    <th scope="col">nat_type</th>
+                    <th scope="col">os</th>
+                </tr>
+            </thead>
+            <tbody id="tableHead">
+
+            </tbody>
+        </table>
+    </div>
+</body>
+
+
+<script>
+    var datatable = $('#table').dataTable();
+
+    $.fn.dataTable.ext.errMode = 'none';
+
+    datatable.on('error.dt', function (e, settings, techNote, message) {
+        console.log('An error has been reported by DataTables: ', message);
+    });
+
+    $(document).ready(function () {
+
+        fetchData();
+
+        if ("WebSocket" in window) {
+            // Let us open a web socket
+            var ws = new WebSocket("wss://crusttest.maidsafe.net/websocket/");
+
+            ws.onopen = function () {
+                // Web Socket is connected, send data using send()
+                // ws.send("Message to send");
+            };
+
+            ws.onmessage = function (evt) {
+                console.log("WS: " + evt.data);
+                if (evt.data.includes("peer_requester")) {
+                    var json = JSON.parse(evt.data);
+                    datatable.fnAddData([
+                        new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString(),
+                        json.peer_requester.geo_info.country_name == undefined ? "N/A" : json.peer_requester.geo_info.country_name,
+                        natTypeString(json.peer_requester.nat_type),
+                        json.peer_requester.os,
+                        json.peer_responder.geo_info.country_name == undefined ? "N/A" : json.peer_requester.geo_info.country_name,
+                        natTypeString(json.peer_responder.nat_type),
+                        json.peer_responder.os,
+                        ConnectionDataString(json.tcp_hole_punch_result),
+                        ConnectionDataString(json.udp_hole_punch_result),
+                        // ConnectionDataString(json.utp_hole_punch_result),
+                        // json.is_direct_successful,
+                        json[i].isHairpinned == undefined ? "N/A" : json[i].isHairpinned
+                    ]);
+                }
+            };
+
+            ws.onclose = function () {
+
+                // websocket is closed.
+                alert("Connection is closed...");
+            };
+        } else {
+            // The browser doesn't support WebSocket
+            alert("WebSocket NOT supported by your Browser!");
+        }
+    });
+
+    $("#FilterForm").submit(function () {
+        var startdate = $("#startdatepicker").val();
+        var enddate = $("#enddatepicker").val();
+
+        if (startdate != undefined && enddate != undefined) {
+            fetchData(startdate, enddate);
+        }
+        return false;
+    });
+
+    function ConnectionDataString(connectiondata) {
+        if (connectiondata == undefined) return "N/A";
+        if (connectiondata.Succeeded != undefined)
+            return connectiondata.Succeeded.time_spent.secs + " sec";
+        else
+            return connectiondata;
+    }
+
+    function natTypeString(nettypedata) {
+        if (nettypedata.EDMRandomPorts != undefined)
+            return "EDMRandomPorts";
+        else
+            return nettypedata;
+    }
+
+    function fetchData(startdate, enddate) {
+
+        var url = "https://crusttest.maidsafe.net/api/stats";
+
+        if (startdate != undefined && enddate != undefined) {
+            url += "?startdate=" + startdate + "&enddate=" + enddate;
+        }
+
+        $.ajax({
+            url: url,
+            dataType: "json",
+            success: function (json) {
+                datatable.fnClearTable();
+                var tr;
+                for (var i = 0; i < json.length; i++) {
+                    datatable.fnAddData([
+                        new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString(),
+                        json[i].peer_requester.geo_info.country_name == undefined ? "N/A" : json[i].peer_requester.geo_info.country_name,
+                        natTypeString(json[i].peer_requester.nat_type),
+                        json[i].peer_requester.os,
+                        json[i].peer_requester.geo_info.country_name == undefined ? "N/A" : json[i].peer_requester.geo_info.country_name,
+                        natTypeString(json[i].peer_responder.nat_type),
+                        json[i].peer_responder.os,
+                        ConnectionDataString(json[i].tcp_hole_punch_result),
+                        ConnectionDataString(json[i].udp_hole_punch_result),
+                        // ConnectionDataString(json[i].utp_hole_punch_result),
+                        // json[i].is_direct_successful,
+                        json[i].isHairpinned == undefined ? "N/A" : json[i].isHairpinned
+                    ]);
+                }
+            }
+        });
+    }
+</script>
+
+</html>
