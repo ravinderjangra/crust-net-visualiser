@@ -36,7 +36,7 @@ const generateLogHash = (log: ConnectionLog): string => {
             peerInfo.nat_type = "EDM_RANDOM";
         }
     });
-    const hashData = [peerData, log.tcp_hole_punch_result, log.is_direct_successful];
+    const hashData = [peerData, log.tcp_hole_punch_result, log.udp_hole_punch_result, log.is_direct_successful];
     const jsonData = JSON.stringify(hashData);
     return crypto.createHmac("sha256", "secret")
         .update(jsonData)
