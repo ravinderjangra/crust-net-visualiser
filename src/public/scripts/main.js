@@ -141,7 +141,7 @@ function setTestnetTitle() {
 }
 
 function setUpdateIpPage() {
-  setTestnetTitle();
+  // setTestnetTitle();
   setIpDetails();
 };
 
