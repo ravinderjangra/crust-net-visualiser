@@ -1,4 +1,4 @@
-import { ConnectionLog, PaginateResponse } from "../types/AppTypes";
+import { ConnectionLog, PaginateResponse, GeoFetchError, ReservedIp, GeoInfo } from "../types/AppTypes";
 
 import ConnectionLogModel from "../models/ConnectionLog";
 
@@ -92,8 +92,9 @@ class ConnectionLogService {
     }
 
     getPossibleDuplicate(log: ConnectionLog): Promise<Boolean> {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             ConnectionLogModel.count({ "logDataHash": log.logDataHash }, function (err, c) {
+                if (err) return reject(err);
                 c > 0 ? resolve(true) : resolve(false);
             });
         });
@@ -106,8 +107,29 @@ class ConnectionLogService {
         if (typeof log.peer_responder.nat_type === "object") {
             log.peer_responder.nat_type = "EDM_RANDOM";
         }
+
+        if (this.instanceOfReservedIp(log.peer_requester.geo_info) || this.instanceOfGeoFetchError(log.peer_requester.geo_info)) {
+            log.peer_requester.geo_info = {
+                "country_name": "NA"
+            } as GeoInfo;
+        }
+
+        if (this.instanceOfReservedIp(log.peer_responder.geo_info) || this.instanceOfGeoFetchError(log.peer_responder.geo_info)) {
+            log.peer_responder.geo_info = {
+                "country_name": "NA"
+            } as GeoInfo;
+        }
+
         log.logDataHash = log.logDataHash.substr(0, 6);
         return log;
+    }
+
+    instanceOfGeoFetchError(object: any): object is GeoFetchError {
+        return "error" in object;
+    }
+
+    instanceOfReservedIp(object: any): object is ReservedIp {
+        return "reserved" in object;
     }
 }
 

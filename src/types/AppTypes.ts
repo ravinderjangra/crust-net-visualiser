@@ -18,9 +18,20 @@ interface NatTraversal {
 
 interface Peer {
     ip: string;
-    geo_info: GeoInfo;
+    geo_info: GeoInfo | GeoFetchError | ReservedIp;
     nat_type: string | EDMPorts;
     os: string;
+}
+
+interface ReservedIp {
+    ip: string;
+    reserved: boolean;
+}
+
+interface GeoFetchError {
+    error: boolean;
+    message: string;
+    reason: string;
 }
 
 interface GeoInfo {
@@ -70,4 +81,4 @@ interface PaginateResponse {
     totalPages: number;
 }
 
-export { TimeSpent, Success, NatTraversal, Peer, ConnectionLog, User, GeoInfo, PaginateResponse };
+export { TimeSpent, Success, NatTraversal, Peer, ConnectionLog, User, GeoInfo, PaginateResponse, GeoFetchError, ReservedIp };
