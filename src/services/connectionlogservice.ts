@@ -107,20 +107,29 @@ class ConnectionLogService {
         if (typeof log.peer_responder.nat_type === "object") {
             log.peer_responder.nat_type = "EDM_RANDOM";
         }
+
+        if (this.instanceOfReservedIp(log.peer_requester.geo_info) || this.instanceOfGeoFetchError(log.peer_requester.geo_info)) {
+            log.peer_requester.geo_info = {
+                "country_name": "NA"
+            } as GeoInfo;
+        }
+
+        if (this.instanceOfReservedIp(log.peer_responder.geo_info) || this.instanceOfGeoFetchError(log.peer_responder.geo_info)) {
+            log.peer_responder.geo_info = {
+                "country_name": "NA"
+            } as GeoInfo;
+        }
+
         log.logDataHash = log.logDataHash.substr(0, 6);
         return log;
     }
 
     instanceOfGeoFetchError(object: any): object is GeoFetchError {
-        return true;
+        return "error" in object;
     }
 
     instanceOfReservedIp(object: any): object is ReservedIp {
-        return true;
-    }
-
-    instanceOfGeoInfo(object: any): object is GeoInfo {
-        return true;
+        return "reserved" in object;
     }
 }
 
