@@ -1,4 +1,4 @@
-import { ConnectionLog, PaginateResponse } from "../types/AppTypes";
+import { ConnectionLog, PaginateResponse, GeoFetchError, ReservedIp, GeoInfo } from "../types/AppTypes";
 
 import ConnectionLogModel from "../models/ConnectionLog";
 
@@ -109,6 +109,18 @@ class ConnectionLogService {
         }
         log.logDataHash = log.logDataHash.substr(0, 6);
         return log;
+    }
+
+    instanceOfGeoFetchError(object: any): object is GeoFetchError {
+        return true;
+    }
+
+    instanceOfReservedIp(object: any): object is ReservedIp {
+        return true;
+    }
+
+    instanceOfGeoInfo(object: any): object is GeoInfo {
+        return true;
     }
 }
 
