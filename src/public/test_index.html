@@ -39,12 +39,12 @@
 
         <form id="FilterForm" class="form-inline" style="margin:20px; text-align: right;">
             <div class="form-group">
-                <label for="startdatepicker">Start Date:</label>
-                <input type="date" class="form-control" id="startdatepicker" required>
+                <label for="startDatePicker">Start Date:</label>
+                <input type="date" class="form-control" id="startDatePicker" required>
             </div>
             <div class="form-group">
-                <label for="enddatepicker">End Date:</label>
-                <input type="date" class="form-control" id="enddatepicker" required>
+                <label for="endDatePicker">End Date:</label>
+                <input type="date" class="form-control" id="endDatePicker" required>
             </div>
             <button type="submit" class="btn btn-default">Submit</button>
         </form>
@@ -76,11 +76,11 @@
     </div>
 
     <script>
-        var datatable = $('#table').dataTable();
+        var dataTable = $('#table').dataTable();
 
         $.fn.dataTable.ext.errMode = 'none';
 
-        datatable.on('error.dt', function (e, settings, techNote, message) {
+        dataTable.on('error.dt', function (e, settings, techNote, message) {
             console.log('An error has been reported by DataTables: ', message);
         });
 
@@ -101,7 +101,7 @@
                     console.log("WS: " + evt.data);
                     if (evt.data.includes("peer_requester")) {
                         var json = JSON.parse(evt.data);
-                        datatable.fnAddData([
+                        dataTable.fnAddData([
                             new Date(json.createdAt).toLocaleDateString() + " " + new Date(json.createdAt).toLocaleTimeString(),
                             json.peer_requester.geo_info.country_name == undefined ? "N/A" : json.peer_requester.geo_info.country_name,
                             natTypeString(json.peer_requester.nat_type),
@@ -130,46 +130,46 @@
         });
 
         $("#FilterForm").submit(function () {
-            var startdate = $("#startdatepicker").val();
-            var enddate = $("#enddatepicker").val();
+            var startDate = $("#startDatePicker").val();
+            var endDate = $("#endDatePicker").val();
 
-            if (startdate != undefined && enddate != undefined) {
-                fetchData(startdate, enddate);
+            if (startDate != undefined && endDate != undefined) {
+                fetchData(startDate, endDate);
             }
             return false;
         });
 
-        function ConnectionDataString(connectiondata) {
-            if (connectiondata == undefined) return "N/A";
-            if (connectiondata.Succeeded != undefined)
-                return connectiondata.Succeeded.time_spent.secs + " sec";
+        function ConnectionDataString(connectionData) {
+            if (connectionData == undefined) return "N/A";
+            if (connectionData.Succeeded != undefined)
+                return connectionData.Succeeded.time_spent.secs + " sec";
             else
-                return connectiondata;
+                return connectionData;
         }
 
-        function natTypeString(nettypedata) {
-            if (nettypedata.EDMRandomPorts != undefined)
+        function natTypeString(netTypeData) {
+            if (netTypeData.EDMRandomPorts != undefined)
                 return "EDMRandomPorts";
             else
-                return nettypedata;
+                return netTypeData;
         }
 
-        function fetchData(startdate, enddate) {
+        function fetchData(startDate, endDate) {
 
             var url = "https://crusttest.maidsafe.net/api/stats";
 
-            if (startdate != undefined && enddate != undefined) {
-                url += "?startdate=" + startdate + "&enddate=" + enddate;
+            if (startDate != undefined && endDate != undefined) {
+                url += "?startdate=" + startDate + "&enddate=" + endDate;
             }
 
             $.ajax({
                 url: url,
                 dataType: "json",
                 success: function (json) {
-                    datatable.fnClearTable();
+                    dataTable.fnClearTable();
                     var tr;
                     for (var i = 0; i < json.length; i++) {
-                        datatable.fnAddData([
+                        dataTable.fnAddData([
                             new Date(json[i].createdAt).toLocaleDateString() + " " + new Date(json[i].createdAt).toLocaleTimeString(),
                             json[i].peer_requester.geo_info.country_name == undefined ? "N/A" : json[i].peer_requester.geo_info.country_name,
                             natTypeString(json[i].peer_requester.nat_type),
