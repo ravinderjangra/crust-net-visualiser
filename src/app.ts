@@ -42,13 +42,14 @@ mongoose.connect(MONGODB_URI, { useMongoClient: true }).then(
 app.set("port", process.env.PORT || 8080);
 app.use(compression());
 
-app.use(function (req, res, next) {
-  if (config.isCORSEnabled) {
+if (config.isCORSEnabled) {
+  app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  }
-  next();
-});
+    next();
+  });
+  console.log("CORS Enabled");
+}
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({

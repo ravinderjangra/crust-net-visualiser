@@ -17,6 +17,8 @@ interface NatTraversal {
 }
 
 interface Peer {
+    id: number;
+    name: string;
     ip: string;
     geo_info: GeoInfo | GeoFetchError | ReservedIp;
     nat_type: string | EDMPorts;
