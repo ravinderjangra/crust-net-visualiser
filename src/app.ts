@@ -18,6 +18,7 @@ import { getClientIp, updateIpFile } from "./util/Helpers";
 import userService from "./services/userservice";
 import connectionLogService from "./services/connectionlogservice";
 
+const config = require("./config/app.json");
 const MongoStore = mongo(session);
 
 // Load environment variables from .env file, where API keys and passwords are configured
@@ -40,6 +41,15 @@ mongoose.connect(MONGODB_URI, { useMongoClient: true }).then(
 
 app.set("port", process.env.PORT || 8080);
 app.use(compression());
+
+app.use(function (req, res, next) {
+  if (config.isCORSEnabled) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  }
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: false
