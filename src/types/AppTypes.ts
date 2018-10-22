@@ -23,6 +23,11 @@ interface Peer {
     os: string;
 }
 
+interface IpGeoInfo {
+    ip: string;
+    geo_info: GeoInfo | GeoFetchError | ReservedIp;
+}
+
 interface ReservedIp {
     ip: string;
     reserved: boolean;
@@ -81,4 +86,4 @@ interface PaginateResponse {
     totalPages: number;
 }
 
-export { TimeSpent, Success, NatTraversal, Peer, ConnectionLog, User, GeoInfo, PaginateResponse, GeoFetchError, ReservedIp };
+export { TimeSpent, Success, NatTraversal, Peer, ConnectionLog, User, GeoInfo, PaginateResponse, GeoFetchError, ReservedIp, IpGeoInfo };
