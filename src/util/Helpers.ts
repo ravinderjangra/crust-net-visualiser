@@ -1,7 +1,8 @@
 import userService from "../services/userservice";
 import fs from "fs";
-import { ConnectionLog, GeoInfo } from "../types/AppTypes";
+import { ConnectionLog, IpGeoInfo } from "../types/AppTypes";
 import crypto from "crypto";
+import geoInfoService from "../services/geoinfoservice";
 const ipApi = require("ipapi.co");
 const config = require("../config/app.json");
 const cred = require("../config/cred.json");
@@ -10,7 +11,6 @@ const getClientIp = (req: any) => {
     const ip = (req.headers["x-forwarded-for"] || req.connection.remoteAddress || "").split(",")[0].trim();
     return ip.replace("::ffff:", "");
 };
-
 
 const updateIpFile = async () => {
     const ipList = await userService.getDistinctIpList();
@@ -43,13 +43,34 @@ const generateLogHash = (log: ConnectionLog): string => {
         .digest("hex");
 };
 
-const getGeoInfoFromIp = (ip: string): Promise<GeoInfo> => {
-    return new Promise((resolve, reject) => {
-        const cb = (res: any, error: any) => {
-            if (error) reject(error);
-            resolve(res);
+const getGeoInfoFromIp = (ip: string): Promise<any> => {
+
+    const getGeoDataFromService = (ip: string) => new Promise<IpGeoInfo>((resolve, reject) => {
+        const cb = async (res: any, error: any) => {
+            if (error) return reject(error);
+            try {
+                await geoInfoService.insert({ "ip": ip, "geo_info": res });
+                resolve({ "ip": ip, "geo_info": res });
+            }
+            catch (e) {
+                reject(e);
+            }
         };
         ipApi.location(cb, ip, cred.ipApiSecret);
+    });
+
+    return new Promise(async (resolve, reject) => {
+        try {
+            const geoInfo = await geoInfoService.getPossibleDuplicate(ip);
+            if (geoInfo) {
+                resolve(geoInfo.geo_info);
+            } else {
+                const info = await getGeoDataFromService(ip);
+                resolve(info.geo_info);
+            }
+        } catch (e) {
+            reject(e);
+        }
     });
 };
 

@@ -2,6 +2,7 @@
     "discourseUrl": "https://safenetforum.org",
     "trustLevel": 1,
     "isMaidsafeOnly": true,
+    "isCORSEnabled": false,
     "mongo": "mongodb://localhost/crusttest",
     "authConfirmURL": "/auth/success",
     "superAdmins": [
