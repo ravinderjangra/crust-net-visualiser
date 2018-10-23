@@ -48,9 +48,13 @@ const getGeoInfoFromIp = (ip: string): Promise<any> => {
     const getGeoDataFromService = (ip: string) => new Promise<IpGeoInfo>((resolve, reject) => {
         const cb = async (res: any, error: any) => {
             if (error) return reject(error);
-            await geoInfoService.insert({ "ip": ip, "geo_info": res });
-            console.log("Fetched from IpApi : " + JSON.stringify(res));
-            resolve({ "ip": ip, "geo_info": res });
+            try {
+                await geoInfoService.insert({ "ip": ip, "geo_info": res });
+                resolve({ "ip": ip, "geo_info": res });
+            }
+            catch (e) {
+                reject(e);
+            }
         };
         ipApi.location(cb, ip, cred.ipApiSecret);
     });
@@ -59,7 +63,6 @@ const getGeoInfoFromIp = (ip: string): Promise<any> => {
         try {
             const geoInfo = await geoInfoService.getPossibleDuplicate(ip);
             if (geoInfo) {
-                console.log("Fetched from DB : " + JSON.stringify(geoInfo.geo_info));
                 resolve(geoInfo.geo_info);
             } else {
                 const info = await getGeoDataFromService(ip);
