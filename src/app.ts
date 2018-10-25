@@ -74,6 +74,20 @@ app.use(lusca.xssProtection(true));
 //   next();
 // });
 
+if (config.isMaidsafeOnly) {
+  app.get("/", function (req, res, next) {
+    if (req.path.startsWith("/auth") || req.path.startsWith("/update_ip"))
+      return next();
+    else if (!req.session || !req.session.user)
+      return res.redirect(config.forumRedirectUrl);
+
+    if (req.session && req.session.user.email.endsWith("@maidsafe.net"))
+      return next();
+    else
+      return res.redirect(config.forumRedirectUrl);
+  });
+}
+
 app.use(
   express.static(path.join(__dirname, "public"))
 );
