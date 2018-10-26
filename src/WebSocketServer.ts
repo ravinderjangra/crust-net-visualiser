@@ -68,6 +68,15 @@ export default class WebSocketServer {
         return next();
       }
 
+      log.peer_requester.name = log.peer_requester.name || "Anon";
+      log.peer_responder.name = log.peer_responder.name || "Anon";
+
+      log.peer_requester.publicId = log.peer_requester.id;
+      log.peer_responder.publicId = log.peer_responder.id;
+
+      log.peer_requester.id = new Buffer(log.peer_requester.id.slice(0, 3)).toString("hex");
+      log.peer_responder.id = new Buffer(log.peer_responder.id.slice(0, 3)).toString("hex");
+
       log.isHairpinned = (log.peer_requester.ip === log.peer_responder.ip);
       log.peer_requester.geo_info = await getGeoInfoFromIp(log.peer_requester.ip);
       log.peer_responder.geo_info = await getGeoInfoFromIp(log.peer_responder.ip);

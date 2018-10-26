@@ -100,7 +100,8 @@ app.get("/test", async (req, res) => {
       ip: "",
       trustLevel: 1,
       email: "email",
-      strategy: "discourse"
+      strategy: "discourse",
+      avatar: ""
     });
     const list = await userService.list();
     res.send(list);

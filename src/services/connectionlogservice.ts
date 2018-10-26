@@ -3,7 +3,7 @@ import { ConnectionLog, PaginateResponse, GeoFetchError, ReservedIp, GeoInfo } f
 import ConnectionLogModel from "../models/ConnectionLog";
 
 class ConnectionLogService {
-    ignoreFields: string = "-peer_requester.ip -peer_responder.ip " +
+    ignoreFields: string = "-peer_requester.ip -peer_responder.ip -peer_requester.publicId -peer_responder.publicId " +
         "-peer_requester.geo_info.region -peer_requester.geo_info.region_code -peer_requester.geo_info.country " +
         "-peer_requester.geo_info.postal -peer_requester.geo_info.timezone -peer_requester.geo_info.longitude -peer_requester.geo_info.utc_offset " +
         "-peer_requester.geo_info.latitude -peer_requester.geo_info.languages -peer_requester.geo_info.org -peer_requester.geo_info.ip -peer_requester.geo_info.city " +
