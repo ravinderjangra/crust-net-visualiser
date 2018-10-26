@@ -120,7 +120,6 @@ app.get("/auth/success", homeController.success);
 
 app.get("/api/profile", async (req, res) => {
   try {
-    console.log(req.session);
     if (!req.session.user) {
       return res.send(401);
     }
