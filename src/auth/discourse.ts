@@ -47,7 +47,8 @@ router.get("/callback", async (req, res) => {
             email: data.email,
             userName: data.username.toLowerCase(),
             trustLevel: userDetails.data.user.trust_level,
-            strategy: "discourse"
+            strategy: "discourse",
+            avatar: data.avatar_url
         };
         res.redirect(config.authConfirmURL);
     } catch (e) {

@@ -10,6 +10,7 @@ const UserSchema: Schema = new Schema({
     strategy: String,
     trustLevel: Number,
     ip: String,
+    avatar: String,
     createdAt: Date
 });
 

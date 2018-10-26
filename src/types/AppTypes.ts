@@ -17,7 +17,8 @@ interface NatTraversal {
 }
 
 interface Peer {
-    id: number;
+    id: string;
+    publicId: string;
     name: string;
     ip: string;
     geo_info: GeoInfo | GeoFetchError | ReservedIp;
@@ -81,6 +82,7 @@ interface User {
     trustLevel: number;
     strategy: string;
     ip: string;
+    avatar: string;
 }
 
 interface PaginateResponse {
