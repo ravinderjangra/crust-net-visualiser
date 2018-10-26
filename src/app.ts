@@ -122,7 +122,7 @@ app.get("/auth/success", homeController.success);
 app.get("/api/profile", async (req, res) => {
   try {
     if (!req.session.user) {
-      return res.send(401);
+      return res.sendStatus(401);
     }
     const user = await userService.findbyId(req.session.user.userId);
     req.session.user.cip = getClientIp(req);
