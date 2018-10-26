@@ -120,8 +120,9 @@ app.get("/auth/success", homeController.success);
 
 app.get("/api/profile", async (req, res) => {
   try {
-    if (!req.session && !req.session.user) {
-      return res.sendStatus(401);
+    console.log(req.session);
+    if (!req.session.user) {
+      return res.send(401);
     }
     const user = await userService.findbyId(req.session.user.userId);
     req.session.user.cip = getClientIp(req);
@@ -135,7 +136,7 @@ app.get("/api/profile", async (req, res) => {
 
 app.get("/api/updateIp", async (req, res) => {
   try {
-    if (!req.session && !req.session.user) {
+    if (!req.session.user) {
       return res.sendStatus(401);
     }
     const user = req.session.user;
@@ -145,7 +146,8 @@ app.get("/api/updateIp", async (req, res) => {
       ip: getClientIp(req),
       trustLevel: user.trustLevel,
       email: user.email,
-      strategy: user.strategy
+      strategy: user.strategy,
+      avatar: user.avatar
     });
     await updateIpFile();
     res.sendStatus(200);

@@ -81,6 +81,7 @@ interface User {
     trustLevel: number;
     strategy: string;
     ip: string;
+    avatar: string;
 }
 
 interface PaginateResponse {
