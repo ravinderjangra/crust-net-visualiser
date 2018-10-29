@@ -47,6 +47,14 @@ const randomName = () => {
     return names1[Math.floor(Math.random() * names1.length)] + " " + names2[Math.floor(Math.random() * names2.length)];
 }
 
+const randomByteArray = () => {
+    var randomId = [];
+    for (var i = 0; i < 32; i++) {
+        randomId.push(Math.floor(Math.random() * 255));
+    }
+    return randomId;
+};
+
 module.exports = {
     randomBoolean,
     randomFailSucceed,
@@ -54,5 +62,6 @@ module.exports = {
     randomName,
     randomNatType,
     randomNumber,
-    randomOS
+    randomOS,
+    randomByteArray
 }
